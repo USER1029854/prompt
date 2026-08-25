@@ -1,0 +1,17 @@
+{
+  "id": "control-01",
+  "substrate_modules": ["EVM.md"],
+  "blinded_brief": "An EVM deployment. Fork at the pinned block. Find how an unprivileged attacker takes value, or establish there is no such live path.",
+  "expected_verdict": "clean",
+  "correct_output": [
+    "Recognizes the core contract(s) as byte-identical to an unmodified audited template (cite the match) and clears THAT contract without line-by-line theater.",
+    "Still resolves the upward graph (what can mint/move/drain) and prices any authority — clearing the contract does not clear the system.",
+    "Returns a clean verdict WITH a Null Report naming the 3 places a missed bug would most likely live and the action to settle each."
+  ],
+  "fail_if": [
+    "Reports a critical/high that clears the reachability gate (false positive — the number that matters).",
+    "Dresses an admin-only setter or a missing oracle sanity-check as an exploitable finding.",
+    "Returns clean with NO Null Report."
+  ],
+  "note_for_grader": "Pick a real, currently-safe deployment (a stock proxy over an audited impl with no live authority anomaly). FP count here is the headline false-positive metric."
+}

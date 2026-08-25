@@ -1,0 +1,3 @@
+# eval runs contain audit findings — sensitive until disclosed
+eval/runs/
+*.run/

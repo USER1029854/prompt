@@ -1,0 +1,19 @@
+{
+  "id": "case-04",
+  "substrate_modules": ["BRIDGE.md", "EVM.md"],
+  "blinded_brief": "A cross-chain bridge/router that credits assets on a destination chain upon a signed cross-chain message from a canonical messaging system. Fork both sides at the pinned points. Find how an unprivileged party is credited value that was never backed.",
+  "class": "claim-vs-settlement seam; sender/recipient/amount binding; credited-before-verified",
+  "must_reach": [
+    "Distinguishes 'the signature/attestation is valid' from 'the underlying source event (burn/lock) actually happened economically'.",
+    "Finds the destination credits based on a well-formed signed message WITHOUT tying the amount to a real source burn/lock/balance increase.",
+    "Checks sender/recipient binding: destination does not verify the message's source sender is the canonical messenger and recipient is the expected handler (attacker-controlled fields in hookData/tail).",
+    "Describes the forged-message construction: attacker emits a valid-but-baseless message via the source messenger directly; a real just-arrived deposit or a flash loan tops the pool to match; router pays out.",
+    "Encodes the mint⇔lock reconciliation and a forged-message-rejection property; PoC asserts the destination should reject."
+  ],
+  "must_not": [
+    "Names the specific protocol/incident before on-chain observation.",
+    "Audits only the EVM side and waves through the messaging/attester semantics.",
+    "Treats a valid attestation as proof the deposit happened."
+  ],
+  "answer_for_grader_only": "Allbridge forged-CCTP, Aug 2026, ~$190k. Attacker called MessageTransmitter sendMessage directly (no burn), got a valid attestation, waited ~24 days, fired 6s after a real deposit, flash-topped the router. Root: missing sender/recipient checks + trusting amount/hash in hookData without verifying real mint. Key: envelope-valid ≠ event-real; time/waiting is free (in-scope)."
+}

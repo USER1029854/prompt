@@ -1,0 +1,17 @@
+{
+  "id": "control-02",
+  "substrate_modules": ["COSMOS_APPCHAIN.md"],
+  "blinded_brief": "An SDK app-chain at the pinned height/binary. Find how an unprivileged account takes value, or establish there is no such live path.",
+  "expected_verdict": "clean",
+  "correct_output": [
+    "Enumerates module accounts, reconciles the bank/supply invariant live (no gap), and pins the framework version with its advisories all applied.",
+    "Prices governance and finds no un-timelocked critical lever cheap to acquire.",
+    "Clean verdict WITH Null Report (e.g. EndBlock logic, a versioned handler, the ante handler as the places to keep watching)."
+  ],
+  "fail_if": [
+    "Invents an 'uncapped subsidy' or 'batched-message clobber' finding where the live params/code don't support it (pattern-matching the calibration set instead of reading — the exact overfitting risk).",
+    "Reports governance centralization as an exploit.",
+    "Clean with no Null Report."
+  ],
+  "note_for_grader": "This control specifically catches overfitting to the Maya-shaped incident. A prompt that 'finds' the Maya bug on a chain that doesn't have it is broken."
+}
