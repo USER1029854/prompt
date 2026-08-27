@@ -20,10 +20,10 @@ For **every account** an instruction reads or writes, the program must establish
 on any one is a seam:
 - **Owner.** Is the account owned by the program that's supposed to own it? An account whose `data`
   the program deserializes and trusts must be owned by this program (or the expected program).
-  Missing owner check → an attacker passes a look-alike account they populated. This is the single
-  most common Solana root cause.
+  Missing owner check → an attacker passes a look-alike account they populated. This is the canonical
+  Solana root cause — the four-check table below is the substance of a Solana audit.
 - **Signer.** Is the account that must have authorized this actually a `is_signer`? Missing signer
-  check → anyone acts as anyone. (Wormhole's $325M was a signature/validation failure of this family.)
+  check → anyone acts as anyone; missing signer verification has produced some of the largest drains on Solana.
 - **Identity / address.** Is this the *specific* account expected — the right PDA, the right mint, the
   right config, the canonical account — not merely *an* account of the right shape? Check PDA
   derivation: correct seeds, correct program id, and canonical bump (`find_program_address`, not an
@@ -46,9 +46,11 @@ signer, identity/PDA, type, distinctness). The gaps are your Q1/Lens E findings 
 about economics at all.
 
 ## Deriving the program & state
-- The program is a deployed BPF/SBF binary at a program id; if unverified source, the target is the
-  binary — dump it (`solana program dump`), and use the IDL if published (Anchor `idl`) but treat the
-  IDL as a claim, not the code.
+- The program is a deployed BPF/SBF binary at a program id. Source binds to it only by a **verified
+  reproducible build** (`solana-verify` — the on-chain program hash equals the hash of a build of the
+  claimed source); confirm that binding before trusting any source. Absent it, the target is the binary —
+  dump it (`solana program dump`); use the IDL if published (Anchor `idl`) but treat the IDL as a claim,
+  not the code.
 - **Upgrade authority.** Read the program's `ProgramData` upgrade authority — a live upgrade authority
   is an authority-over-the-target seam (can replace the code over live funds). Note whether it's a
   multisig, a DAO, or a single key, and price it.
@@ -90,8 +92,9 @@ instruction exists.
 - Native (non-Anchor) programs, where the checks are hand-rolled and easy to omit — Anchor gives
   owner/signer/discriminator checks by default, native code doesn't.
 - **Deprecated-but-live programs.** A program the UI stopped calling is still callable at its program id;
-  an old AMM/lending version with a missing account check is a standing drain (real 2026 case: a
-  deprecated AMM's remove-liquidity path accepted a forged LP-mint account). Enumerate old versions.
+  an old AMM/lending version with a missing account check is a standing drain — a deprecated
+  remove-liquidity path that never validated the LP-mint account it was handed pays out against a forged
+  mint. Enumerate old versions.
 - CPI targets where the invoked program id isn't pinned, and third-party SDK callbacks (e.g.
   ephemeral-rollup undelegation) that don't re-verify PDA seed derivation.
 - The `close`/`realloc`/reinit paths (lifecycle seam).

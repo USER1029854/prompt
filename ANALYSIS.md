@@ -490,3 +490,27 @@ Net: v4 is almost entirely subtraction and calibration — no new lens, no new a
 places the document held itself to a lower evidentiary bar than it holds the auditor (the base-rate
 prior, the frequency superlatives), and sands the two spots that move real findings toward or away from
 the report (governance pricing, warp). v3 is preserved as `CORE.v3.md`.
+
+## v4, extended to the modules
+
+The v4 review was aimed at the CORE, but two of its fixes are systemic and the modules carried the same
+issues — so leaving them CORE-only would have been inconsistent:
+
+- **Leading language / incident-steering.** The modules were where the most specific "biggest hack of
+  the year, go find it" framing lived (a Move opener citing "the single largest in-scope loss of the
+  last year, ~$223M"; "the Cetus bug lived in…"; "a real 2026 drain paid out ~$11.6M"; "Wormhole's
+  $325M"; `Term-shaped`/`Arrakis-shaped`/`Allbridge-shaped` shorthands). All of it now teaches the
+  *mechanism/shape* with the incident name, dollar figure, and ranking removed — the mechanism is what
+  instructs; the name only adds the steer this whole project exists to avoid. A full sweep confirms no
+  incident name, dollar figure, or frequency superlative remains in CORE or any module. The two
+  surviving "most common" phrases are an auditing-practice warning (asserting set contents without
+  enumeration) and the descriptor "theft-shaped" — neither steers toward a bug.
+- **Substrate verification.** "The chain's own verification attests" is EVM-specific; the Cosmos, Solana
+  (`solana-verify`), and Move (published-bytecode compare) modules now state the reproducible-build /
+  program-hash binding as their own source-of-truth mechanism.
+
+And one alignment carry-through: the EVM module's governance guard-pricing now mirrors CORE §4 — price
+capture by the cheaper of open-market float and the **deposit-to-votes** path, and gate the finding on
+whether the timelock can actually save users. The substrate *mechanics* (proxy resolution, the Solana
+four/five-check table, Move shift-truncation, the precompile mirror-desync) were left intact — those are
+necessary knowledge, not leading.

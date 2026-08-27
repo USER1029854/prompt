@@ -20,8 +20,8 @@ explicit shifts. `<0.8` and inline assembly wrap by default. Find every `uncheck
 a value path, and every assembly arithmetic op; these are where a checked-by-default reviewer stops
 looking. Division is floor; **round direction is a first-class question** — for every `mulDiv`/`/`/
 fixed-point op on an exit path, state whether it rounds toward the protocol or the caller and who keeps
-the remainder. A single floor-division dropping a rate adjustment, repeated across dozens of micro-swaps
-in one transaction, was a nine-figure loss.
+the remainder. A single floor-division dropping a rate adjustment, compounded across dozens of micro-swaps
+in one transaction, is how rounding dust becomes a drain — the strong form is the fuzzer in §6, not a hand trace.
 
 ## Deferred / transient settlement (Lens C)
 Systems that permit a transient invariant violation as long as the transaction "nets out" — Uniswap V4
@@ -62,19 +62,26 @@ The check-that-doesn't-hold (Lens G) forms recur on the EVM specifically as:
   `Upgraded`, `Approval` on every token the system holds, and any bespoke `*Set`/`*Registered` event.
 
 ## Guard pricing — EVM specifics
-- **Governance.** Read the *live* `totalSupply()` of the voting/wrapped-voting token and the live
-  quorum/threshold/`proposalThreshold`. Wrapped voting tokens (Aragon OSx TokenVoting, Governor +
-  ERC20Votes, Zodiac) frequently have a float far below the underlying — price control against the
-  *wrapper's* supply, not the underlying asset's. Check delegation: is voting power snapshotted, and
-  can it be flash-acquired within a block if not `getPastVotes`-gated?
-- **Timelock / delay.** Zodiac Delay, OZ TimelockController, Governor timelock. The price is
-  reconfigurability: can the delayed party (a module, a role) call back into the delay to set cooldown
-  to 0, or enable itself as an exempt module? Trace `owner()`/`admin` of the delay and every address
-  that can call its setters — this is the exact Term-shaped seam, and it is a Lens C + Lens F
-  (lifecycle) interaction.
+- **Governance.** Price control by the *cheaper* of two routes. **(a) Open market:** read the *live*
+  `totalSupply()` of the voting/wrapped-voting token and the live quorum/threshold/`proposalThreshold`;
+  wrapped voting tokens (Aragon OSx TokenVoting, Governor + ERC20Votes, Zodiac) frequently have a float
+  far below the underlying — price against the *wrapper's* supply, not the underlying. **(b)
+  Deposit-to-votes:** can voting power be *minted or wrapped through the protocol's own path* — deposit
+  → shares → wrap → votes — for far less than the market price of the float? This is the route thin
+  governance is actually captured through; price it explicitly. Check delegation: is voting power
+  snapshotted (`getPastVotes`), or flash-acquirable within a block? And **gate the finding on the
+  timelock**: cheap votes are only an exploit when a malicious proposal's execution can't be caught —
+  see the delay row.
+- **Timelock / delay.** Zodiac Delay, OZ TimelockController, Governor timelock. Two things set the price:
+  **reconfigurability** — can the delayed party (a module, a role) call back into the delay to set
+  cooldown to 0, or enable itself as an exempt module (trace `owner()`/`admin` and every address that can
+  call its setters; a delay its own subject can reconfigure is no delay) — and **reaction value** — is
+  the delay actually watched by someone with the power and the history of vetoing? A delay whose only
+  protection is a human reaction nobody performs is weaker than its duration; warping a fork past it
+  proves a mechanism mainnet might catch, so report such a path contingent on the veto not firing.
 - **Economic / oracle.** Distinguish `slot0()` spot from a TWAP (`observe()`), and — the key check —
   **map which user-facing path reads which.** Grep every read of the price/reserve source and list
-  the call sites; a deviation guard on `rebalance()` but not `mint()`/`burn()` is the Arrakis-shaped
+  the call sites; a deviation guard on `rebalance()` but not `mint()`/`burn()` is the guard-on-the-wrong-path
   seam. Chainlink: check `updatedAt` staleness, `answeredInRound`, min/max circuit-breaker bounds,
   and L2 sequencer-uptime feed. Any `getReserves()`/`balanceOf(pool)` used for pricing is
   flash-manipulable unless time-averaged.

@@ -231,12 +231,12 @@ count equals row count. A gap is not a status to file — it is the next thing t
 
 ## 4. Guard pricing — the step that changes the answer
 
-Guarded systems get drained because "guarded" is read as "safe." It is not. Almost every exploit in
-this class ran *through a guard that existed*: a governance vote that cost $2k to win, a 7-day timelock
-that could set its own cooldown to zero, a TWAP wired to the wrong function, a valid attestation over a
-forged message, an overflow check with the wrong threshold, a reserve assumed full that held 0.3% of
-the draw. The finding is rarely "the guard is missing." It is **"the guard costs less to defeat than
-what it protects."**
+Guarded systems get drained because "guarded" is read as "safe." It is not. Most exploits in this class
+run *through a guard that existed*: a governance vote whose weight was cheap to acquire, a timelock that
+could set its own cooldown to zero, a TWAP wired to a function the attacker didn't use, a valid
+attestation over a forged message, an overflow check with the wrong threshold, a subsidy assuming a
+reserve far larger than the one actually there. The finding is rarely "the guard is missing." It is
+**"the guard costs less to defeat than what it protects."**
 
 For every Guard row, compute from live state at the pinned point:
 
@@ -345,8 +345,9 @@ The arithmetic of value is the lens auditors most often skim — each step looks
 and the loss only appears when you evaluate the whole path at its edges. For every value computation on
 an exit path:
 - **Rounding direction.** Every division, every fixed-point op: does it round in the *protocol's* favor
-  or the *caller's*? A single floor-division that drops a rate adjustment, repeated, is a nine-figure
-  bug. Find every rounding site; state its direction; ask who profits from the dropped remainder.
+  or the *caller's*? A single floor-division that drops a rate adjustment, repeated across many calls,
+  compounds dust into a drain. Find every rounding site; state its direction; ask who profits from the
+  dropped remainder.
 - **Silent truncation.** Bit-shifts, casts, and narrowing conversions that drop high or low bits
   *without* aborting (behavior differs by substrate — see the module). An oversized value passing a
   bounds check and then losing significant bits in a shift is exactly how huge liquidity gets minted

@@ -4,7 +4,8 @@ Load with CORE.md. Mechanics for auditing a sovereign SDK chain: the value logic
 (keepers, handlers, `BeginBlock`/`EndBlock`, ante handlers), not in deployed contracts — so "the
 deployment" is a **binary at a height**, and the "verified source" is the tagged release whose build
 you must match, not assume. Where the chain also runs Cosmos EVM, load EVM.md too; the seam between
-the EVM and the bank/SDK state is the highest-yield surface on these chains.
+the EVM and the bank/SDK state is a prime surface on these chains — value-moving logic crosses two
+state machines there, and each side is reviewed as if the other guaranteed consistency.
 
 ## Atomic unit — read this first, it is the recurring killer
 The atomic unit is **not** the transaction. A `Msg` handler can fail while sibling messages in the
@@ -41,14 +42,14 @@ own revert semantics, so that an EVM revert unwinds the native write and a nativ
 EVM frame? Vesting-account, staking, and balance-handling precompiles have all been hit. This is a
 **shared-framework** bug: pin the exact `cosmos/evm` (or ethermint/evmos lineage) version, pull its
 advisory list, and confirm each fix is present in the running binary — a published precompile advisory
-unapplied here is the single highest-probability finding.
+unapplied here is among the highest-probability findings.
 
 Two named forms this took, both worth checking explicitly:
 - **Mirrored-balance desync / underflow.** The EVM keeps a *mirror* of the native bank balance; a
-  precompile that writes the post-operation balance back can underflow it. Real case: an account made
-  into a vesting account (by precomputing the contract's deploy address, converting that address to a
-  vesting account, then deploying so the contract inherits vesting status) delegates one wei more than
-  its spendable balance, and the staking precompile writes the mirror to ~2²⁵⁶. Total supply never
+  precompile that writes the post-operation balance back can underflow it. The shape to check: an account
+  made into a vesting account (e.g. by precomputing the contract's deploy address, converting that
+  address to a vesting account, then deploying so the contract inherits vesting status) delegates one wei
+  more than its spendable balance, and the staking precompile writes the mirror to ~2²⁵⁶. Total supply never
   changes, so a supply invariant won't catch it. Check every precompile that mirrors a balance for
   under/overflow and for vesting/locked-balance edge cases.
 - **Caller → cosmos-account authorization mapping.** EVM `msg.sender` semantics do **not** carry

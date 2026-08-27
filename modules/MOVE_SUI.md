@@ -1,9 +1,9 @@
 # Module — Move (Sui / Aptos)
 
-Load with CORE.md. Move is where the single largest in-scope loss of the last year happened (a
-concentrated-liquidity DEX, ~$223M, drained through a wrong threshold in an overflow/shift check), and
-its arithmetic and object semantics differ enough from the EVM that reviewers trained on Solidity miss
-the exact class. Mechanics only here; the method is in CORE.md.
+Load with CORE.md. Move's arithmetic and object semantics differ enough from the EVM that a reviewer
+trained on Solidity misses whole classes — most sharply, Move aborts on arithmetic overflow but a
+bit-shift truncates silently, so a wrong threshold on a shift/cast passes every overflow check and still
+drops value. Mechanics only here; the method is in CORE.md.
 
 ## Arithmetic semantics — read this first (Lens C)
 - **Move aborts on `+ - *` overflow and on divide-by-zero** — so those are safe *by default*, which
@@ -37,8 +37,9 @@ the exact class. Mechanics only here; the method is in CORE.md.
   of the protocol's control, or a wrapped object unwrapped by someone who shouldn't?
 
 ## Deriving the system
-- The published package(s) at their address; if source isn't verified, the target is the compiled
-  bytecode module — disassemble it. Read the on-chain package, not a repo.
+- The published package(s) at their address. Source binds only by a reproducible-build match against the
+  on-chain module bytecode (Sui/Aptos source verification); confirm it before trusting source. Absent it,
+  the target is the compiled bytecode module — disassemble it. Read the on-chain package, not a repo.
 - **Upgrade policy.** A package's `UpgradeCap` and its policy (immutable / compatible / additive) is the
   authority-over-target seam: a live compatible-upgrade cap can replace value logic over live funds.
   Price who holds it.
@@ -56,12 +57,13 @@ the exact class. Mechanics only here; the method is in CORE.md.
 - **Shared-object contention / equivocation** is a liveness/ordering concern, usually out of scope, but
   a shared object whose consistency the code assumes across a PTB can be a real seam.
 - **Arithmetic guard** (the bounds check before a shift/cast): price it by finding an input at the
-  boundary that passes the check yet corrupts the downstream value. This is the Cetus shape; test it in
+  boundary that passes the check yet corrupts the downstream value. This is the wrong-threshold-on-a-shift shape; test it in
   §6, don't eyeball it.
 
 ## The unread Move surface (attention inversion)
-- The math helper library shared across pools (the Cetus bug lived in an open-source liquidity-math
-  helper everyone trusted).
+- The shared math-helper library every pool imports — trusted as boilerplate, audited by no one who
+  treats it as the value path. A wrong bound in a shared `sqrt`/tick/fixed-point helper is a wrong bound
+  in every pool at once.
 - `public` functions without an `entry`-level review because they're "internal-ish".
 - **Deprecated packages and peripheral shared objects still live.** A reward "spool" nobody had called
   in 17 months paid out a trillion-fold inflated points and drained its pool; the object model kept the
