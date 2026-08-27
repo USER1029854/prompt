@@ -10,6 +10,10 @@ verdict with a Null Report.
 ```
 CORE.md                     the audit method. Read first. Spine: exits -> the numbers they trust -> the
                             four ways a number is wrong (stale / forged / miscomputed / unbounded).
+DISCOVERY.md                urgency-first triage: rank the live universe by time-to-exploitation
+                            (unremediated-known / shared-dependency-cluster / composed-of / fork-of-
+                            victim) and hand the hottest candidates to CORE.md. Read-only; never says
+                            "vulnerable".
 CORE.v1/v2/v3.md            previous versions, kept for diffing (v1 seam-first, v2 wrong-number
                             spine, v3 three-question spine; v4 = external-review calibration).
 modules/

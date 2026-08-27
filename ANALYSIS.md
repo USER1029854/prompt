@@ -545,3 +545,25 @@ Four small, mutually-reinforcing touches, all general (no case cited):
 Scope discipline held: this is the one flavor that was genuinely thin; the pricing/read flavor was left
 alone (already covered), and no incident is named in the shipped prompt (the `cometbft` string in the
 Cosmos module is the unrelated consensus engine).
+
+## v4.2 — DISCOVERY.md: reorienting triage to urgency
+
+The discovery/triage front-end (separate from the deep-audit CORE.md) was reranking the live universe by
+abstract hack-*likelihood*. That is the wrong axis for a small defender trying to prevent the *next* loss:
+it treats a bug nobody has found yet the same as one whose exploit is already written and circulating.
+DISCOVERY.md reranks by **time-to-exploitation** — urgency is highest where the technique is already
+public AND the fix is absent from the deployed artifact AND live value is reachable. Consequences:
+remediation status is promoted from a footnote to the primary ranking driver, and "the deployed artifact,
+not the repo, decides" becomes the fastest confirm/kill in the whole flow.
+
+Five urgency tiers, worked top-down: (1) unremediated-known (public technique, fix not in the deployed
+bytecode), (2) shared-dependency cluster (a published advisory live across a fork/vendored/sovereign
+population with no patch-compliance mechanism — vendored forks are the highest-yield sub-case because
+dependency scans miss them), (3) composed-of dependency (the target holds an external protocol's asset
+whose issuer is exposed — the CORE.md v4.1 addition, applied to triage), (4) fork-of-recent-victim,
+(5) novel-high-fit (the old likelihood-first mode, correctly demoted below the hot clocks). Supply-
+conservation is called out as the one root-cause-agnostic detector that flags a family member before its
+indicator is written. Kept general — no incident named as a target; it re-derives families from whatever
+the current corpus is. It preserves the discipline the discovery work had earned (evidence levels, read-
+only, no "vulnerable" language, ledger/no-repetition, the small-entity band, value-at-risk beside the
+score) and hands off to CORE.md.
