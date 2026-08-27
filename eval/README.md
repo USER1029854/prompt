@@ -37,6 +37,10 @@ and includes **clean controls** with no bug so you can measure false positives.
 A case is **"could have prevented"** only if PATH ≥ 0.8, DERIVED, and PROVEN. Naming the bug without
 the path is a fail, however impressive it reads.
 
+## How to run it
+See **RUNBOOK.md** for the concrete blind procedure (set up the fork, assemble and
+leak-check the bundle, run a fresh auditor, grade PATH/DERIVED/PROVEN, run the controls).
+
 ## Files
 - `cases/*.json` — one per historical incident, blinded, with `must_reach` / `must_not` and the
   substrate module(s) to load. `answer` is at the bottom, for the grader only — never in the auditor's

@@ -585,3 +585,21 @@ unchanged (incident-derived-urgency-above-novel is correct for "prevent the next
   *magnitude* — putting dollar size back into the score would have re-introduced the exposure-weighting
   the operator explicitly rejected. Magnitude stays the gate (empty→out, band) and the tiebreaker
   (prefer fuller among equals), never the score.
+
+## v4.4 — making the eval actually runnable, and blind
+
+"How do I test the eval, still blindly?" exposed a genuine gap: the harness blinded the *brief* and
+graded the *transcript*, but had no glue to assemble the exact auditor bundle, no automatic leak-check,
+and no written procedure. Added:
+- **`run_case.sh`** now assembles `PROMPT_BUNDLE.md` (CORE.md + the case's module(s) + the blinded brief
+  — the only thing the auditor may see) and **leak-checks** it: hard-fails if any incident name (from the
+  grader's retrieval list) or grader-only field is present, warns on coincidental capitalised words.
+- **`RUNBOOK.md`** — the end-to-end blind procedure: the two-actor separation (auditor blind / grader
+  sees answer), building the one-block-before fork, running a fresh auditor context, grading
+  PATH/DERIVED/PROVEN, running controls for FP, keeping the suite honest (retire leaked cases, weight
+  obscure/recent), and authoring new cases.
+- The leak-check immediately caught a real bug in the grader: the retrieval list contained framework/
+  chain names (`aragon`, `zodiac`, `cctp`, `cosmos evm`, `balancer`, `sui`) that legitimately appear in
+  the modules — so they were both false de-blinders and useless recall signals (an auditor echoing the
+  module's vocabulary isn't recalling the incident). Pruned to 26 genuine incident names, all verified
+  absent from CORE and every module, and re-checked: every case's bundle now passes the leak check.

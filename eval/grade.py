@@ -93,8 +93,12 @@ MATCH = {
              ["poc","fork","mint","no matching","sell","withdraw"]],
 }
 
-RETRIEVAL = ["term finance","aragon","zodiac","arrakis","g-uni","allbridge","cctp","maya","mayachain",
-             "cosmos evm","saga","mantra","tac","kiichain","wormhole","gravity bridge","chia","cetus","balancer","foom","sui","aftermath","moonwell","venus","aztec","harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge"]
+# Genuine incident/protocol-victim names ONLY — and none of these may appear in CORE.md or any module,
+# or they stop being a recall signal (an auditor could just be echoing the material it was given).
+# run_case.sh's leak-check enforces that separation; keep this list disjoint from the auditor's bundle.
+RETRIEVAL = ["term finance","arrakis","g-uni","maya","mayachain","saga","mantra","tac","kiichain",
+             "wormhole","gravity bridge","chia","cetus","foom","aftermath","moonwell","venus","aztec",
+             "harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge"]
 
 def any_syn(group, text):
     # group = list of synonym substrings; HIT iff any synonym appears in text.
