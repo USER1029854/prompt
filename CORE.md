@@ -763,6 +763,13 @@ addresses — report that; don't find something plausible and audit that instead
   chain, derive each side by its own substrate's rules, and treat the master conservation invariant
   (issued on one side ≤ locked on the other, reconciled live at both pinned points) as the first thing
   you establish, before any per-side reading.
+- **A triage handoff line** (`TARGET=… || TIER=… || FAMILY=… || DECISIVE_CHECK=… || VALUE_AT_RISK=… ||
+  PINNED=… || MODULES=…`) — take `TARGET`/`PINNED`/`MODULES` as scope only (which system, which pinned
+  state, which module to load) and proceed exactly as for whichever input type `TARGET` is. Treat
+  `FAMILY`/`DECISIVE_CHECK` as a **hypothesis to test first and then set aside**, never the audit: run the
+  decisive check early because it is the cheapest confirm/kill, then map and interrogate every exit
+  regardless of how it came out — the seam that pays is often not the one you were handed. Re-derive
+  `VALUE_AT_RISK` from live state for severity; the handed number is a triage estimate, not evidence.
 
 Before beginning, inspect the execution environment for available blockchain tooling, RPC endpoints,
 and API credentials (providers, explorer/source-verification APIs, chain-specific endpoints). Use the

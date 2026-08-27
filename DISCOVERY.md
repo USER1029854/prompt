@@ -231,6 +231,24 @@ Then the handoff line per candidate, appendable to CORE.md:
 TARGET=<url|address|chain+height> || TIER=<1-5> || FAMILY=<ids> || DECISIVE_CHECK=<the fix/guard line to confirm in the deployed artifact> || VALUE_AT_RISK=<usd> || PINNED=<chain:block> || REMEDIATION=<status> || MODULES=<EVM|COSMOS_APPCHAIN|SOLANA|MOVE_SUI|BRIDGE>
 ```
 
+Send the **whole line** by default — but know that its fields are three kinds, and only one leads:
+- **Scope** (`TARGET`, `PINNED`, `MODULES`) — where to stand, which block to fork, which module to load.
+  Pure operation, never biasing; withholding it only forces the auditor to re-derive it. Always send.
+- **Gate/context** (`TIER`, `VALUE_AT_RISK`, `REMEDIATION`) — facts about the world, not claims about the
+  bug. Send them, but CORE.md **re-derives `VALUE_AT_RISK` from live state** for its severity gate and
+  treats the handed number as a triage estimate only.
+- **Hypothesis** (`FAMILY`, `DECISIVE_CHECK`) — the one leading part: where DISCOVERY *guessed* the seam
+  is. Send it **as a hypothesis to test first and set aside**, never a conclusion. Tier 1: the
+  `DECISIVE_CHECK` *is* the task — confirm the known fix is present in the deployed artifact; it is the
+  fastest confirm/kill (absent → finding; present → keep auditing the whole surface). Tiers 2–5: it is
+  only a guess — point the three-question spine there first because it is cheap, then audit every exit;
+  landing on a *different* seam than the one handed is the expected outcome, not a miss.
+
+**Link-only mode.** To make CORE.md's path independent evidence — an eval/blind run, or a cross-check when
+you distrust the guess — hand `TARGET=<url>` **alone** and drop the rest. You lose the operational scoping
+(CORE re-derives it) and gain a finding that owes nothing to DISCOVERY's hypothesis. Use it deliberately;
+the full line is the default for speed.
+
 CORE.md does the real work from there — full mapping, the three questions per exit, guard pricing,
 execution — and must not restrict itself to the handed family; the pattern is a search accelerator, not
 the audit.
