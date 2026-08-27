@@ -514,3 +514,34 @@ capture by the cheaper of open-market float and the **deposit-to-votes** path, a
 whether the timelock can actually save users. The substrate *mechanics* (proxy resolution, the Solana
 four/five-check table, Move shift-truncation, the precompile mirror-desync) were left intact — those are
 necessary knowledge, not leading.
+
+## v4.1 — composed-of / backed-by dependency (a scoping gap in the mapping)
+
+A live case surfaced the sharpest remaining gap, and it was a *scoping* gap, not a detection one: an
+auditor points at protocol A, audits it, finds nothing — correctly, A's code is sound — while the money
+leaves through protocol B, whose token/LP-share/receipt A *holds* as backing or backstop. A's call-graph
+never touches B's buggy function; A merely holds the asset B issues. The prompt already handled the
+*read/price* flavor of composition ("an AMM reserve you price against, a vault share ratio you deposit
+into, a lending index you read"), but not the *hold* flavor.
+
+Research confirms this is a general, named class (DeFi composability / systemic dependency), with several
+flavors sharing one root — the target's value is impaired by a defect in a system it doesn't control but
+structurally depends on: **pricing** (read an external price — already covered), **backing/holding** (hold
+a claim on an external protocol — the gap), **strategy** (deposit into an external yield source), and
+**shared collateral/liquidity**. Only backing/holding was under-covered.
+
+Four small, mutually-reinforcing touches, all general (no case cited):
+- **Lens F** gains a "composed-of / backed-by dependency" bullet: enumerate what each issued unit is
+  backed by and what the system holds as reserve/collateral/backstop/strategy; any holding that is a claim
+  on an external protocol puts that protocol's value-integrity in scope; follow into it as you would the
+  target; you find these by asking "what is each holding a claim on," not by following calls.
+- **Inventory register** now forces the resolution: for every held reserve/collateral/backing asset,
+  resolve its issuer and add it as an in-scope-for-value-integrity row — never "inert," never a bare
+  external name.
+- **§8** extends "a surface you named can't be deferred" to explicitly include an external protocol whose
+  held token/share would devalue what the target's users are owed.
+- **§9** adds the matching artifact-time check.
+
+Scope discipline held: this is the one flavor that was genuinely thin; the pricing/read flavor was left
+alone (already covered), and no incident is named in the shipped prompt (the `cometbft` string in the
+Cosmos module is the unrelated consensus engine).

@@ -132,7 +132,11 @@ list.
 1. **Inventory** — every component (contract, module, program, package, off-chain service, external
    dependency the system trusts). Per row: what it is, how you reached it, whether it holds value /
    authority over value / live approvals / is inert, proxy status and implementation, and where its
-   code sits on disk.
+   code sits on disk. **And, for every asset the system holds as reserve / collateral / backing / backstop
+   / strategy, resolve what protocol *issues or backs* that asset and add that protocol as its own row,
+   classified as in-scope for value-integrity — never "inert," never a bare external name.** An asset the
+   system merely holds does not appear in its call-graph, so this resolution is a deliberate step: read
+   each holding's token/share/position back to its issuer (§5, composed-of dependency).
 2. **Exits** — every path value leaves by *or is issued by* (§1): transfers, releases, payouts,
    redemptions, liquidations, standing approvals — **and every mint / credit / wrap / share-issuance.**
    Per row: what authorizes it (Q1), what bounds the amount and what backs any issuance (Q2), the
@@ -408,6 +412,19 @@ chose?
   denominator. Work every edge; the best compositions cross component boundaries, including state
   written by contracts you don't control (an AMM reserve you price against, a vault share ratio you
   deposit into, a lending index you read).
+- **Composed-of / backed-by dependency — the target's value can break where its own code is flawless.**
+  A protocol can be impaired by a defect in a system it does not control but structurally depends on, and
+  reading external state (above) is only one flavor. The one auditors miss is **holding**: enumerate what
+  each unit the system issues is *backed by*, and what the system *holds* as reserves, collateral,
+  backstop, or a deployed strategy. Wherever a holding is a **claim on an external protocol** — an LP or
+  pool share, a receipt/wrapper token, a vault share, a staked or lent position, a derivative — that
+  external protocol's *value-integrity* is in your scope, because its internal exploit, de-peg, or
+  bad-debt event drains or devalues what your users are owed **even though your contracts are correct and
+  never call the buggy function.** Map every such holding to its issuing/backing system and follow into
+  it (its exit set, its own Q1/Q2/Q3), exactly as you would the target. The failure mode this prevents:
+  clearing the audited protocol as sound while the money leaves through the *thing it is made of*. Note
+  that the call-graph won't surface these — the system merely *holds the token*; you find them by asking
+  "what is each reserve/collateral/backing actually a claim on," not by following calls.
 - **Attention inversion.** Rank the surface by how much scrutiny it has already had and spend inversely.
   The least-read, highest-yield surfaces: the other substrate's side of a bridge; the shared
   framework/dependency rather than the app on top — and its **published, unapplied advisories** (pin
@@ -647,10 +664,12 @@ Rank by severity; a harder-to-PoC compositional finding is not worth less than a
 must not be demoted to an open question to tidy the report.
 
 **A surface you named as able to drain the target cannot be deferred.** If your own reasoning
-identifies an in-scope component that could take the target's funds if flawed, either audit it or state
-*in the verdict* that your result does not cover the target's funds. Declining to examine it, calling it
-an "external trust boundary," and returning a clean verdict makes the verdict and the caveat contradict
-each other — and the caveat is the true one.
+identifies an in-scope component that could take the target's funds if flawed — **including an external
+protocol whose token/share/position the target holds as backing, reserve, or collateral, whose own
+failure would devalue what the target's users are owed** — either audit it or state *in the verdict* that
+your result does not cover the target's funds. Declining to examine it, calling it an "external trust
+boundary," and returning a clean verdict makes the verdict and the caveat contradict each other — and the
+caveat is the true one.
 
 ---
 
@@ -678,6 +697,9 @@ own verdict and validates it; run these while there's no conclusion to defend):
   verdict filled with a cited line each?
 - Is the master conservation invariant (`issued ≤ backing`) reconciled against live balances now, not
   only theorised for exploit time?
+- Is every reserve / collateral / backing / backstop / strategy holding resolved to the protocol that
+  issues or backs it, and that protocol either audited for value-integrity or named in the verdict as
+  uncovered exposure — never left as an inert external name?
 - Does every guard have a **price in dollars from live state**, and a who-can-change-it-how-fast? For
   each, the Lens G tuple {invariant meant · predicate checked · scope verified · scope acted-on} — do
   the last three match the first?
