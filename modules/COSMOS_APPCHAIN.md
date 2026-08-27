@@ -43,6 +43,20 @@ EVM frame? Vesting-account, staking, and balance-handling precompiles have all b
 advisory list, and confirm each fix is present in the running binary — a published precompile advisory
 unapplied here is the single highest-probability finding.
 
+Two named forms this took, both worth checking explicitly:
+- **Mirrored-balance desync / underflow.** The EVM keeps a *mirror* of the native bank balance; a
+  precompile that writes the post-operation balance back can underflow it. Real case: an account made
+  into a vesting account (by precomputing the contract's deploy address, converting that address to a
+  vesting account, then deploying so the contract inherits vesting status) delegates one wei more than
+  its spendable balance, and the staking precompile writes the mirror to ~2²⁵⁶. Total supply never
+  changes, so a supply invariant won't catch it. Check every precompile that mirrors a balance for
+  under/overflow and for vesting/locked-balance edge cases.
+- **Caller → cosmos-account authorization mapping.** EVM `msg.sender` semantics do **not** carry
+  through to a native-module call. When a contract calls a native module (staking, bank, vesting), which
+  cosmos account is the authenticated source, and can the caller name *any* account as the fund source?
+  A binding that requires the funder to authorize, evaluated against the wrong account, lets a contract
+  move anyone's funds. Trace, at every precompile/module boundary, exactly whose authority is checked.
+
 ## Deriving the system
 - **Genesis + upgrades.** The live parameter set is genesis + every passed governance param-change +
   every software upgrade handler. Read current params via the chain's REST/gRPC (`/cosmos/...params`,
@@ -89,6 +103,15 @@ unapplied here is the single highest-probability finding.
   misreads the old encoding is a lifecycle seam.
 - **IBC**: the packet-receipt / timeout / acknowledgement paths, and whether a `recvPacket` credits
   before verifying, or a timeout refunds a packet that was also relayed.
+- **The signing / consensus / bridge-vault layer.** For a chain that runs its own outbound signing,
+  threshold signatures (TSS/MPC), or cross-shard/receipt consensus, that layer is **in scope** — it is
+  where several 2026 L1 losses lived (a TSS fork years behind upstream that skipped the zero-knowledge
+  proofs validating key formation, letting a bonded-in node reconstruct the vault key over successive
+  signing rounds; cross-shard receipts not bound to the authenticated source header, replayed to mint).
+  This is simultaneously an authorization-acquirable case (bond/stake to join the validator/signer set —
+  price that, §4), a Q3 case (a skipped or mis-specified soundness check in the signing protocol), and a
+  fleet case (the crypto library is a fork behind upstream). Read the TSS/keygen library at its pinned
+  version against upstream, and confirm the receipt/nullifier binds to authenticated source data.
 
 ## Tooling
 Query live state via the chain's REST/gRPC/`abci_query` at the pinned height. Reconstruct sets from

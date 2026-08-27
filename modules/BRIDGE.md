@@ -53,13 +53,27 @@ Every bridge credits value on B because it believes something happened on A. Thr
   attacker register a fabricated id that collides with, or aliases, a real asset — mapping "worthless
   token X" to "real USDC custody"? Enumerate who can write the id↔asset mapping and whether collisions
   are rejected. Check hash/encoding ambiguity: concatenated variable-length fields (chain id + sender
-  + payload) that can be re-split to the same hash.
+  + payload) that can be re-split to the same hash — a real 2026 drain reinterpreted a 3,097-unit
+  authorization as 203,000,000 because 14 variable-length fields were concatenated without delimiters.
+- **Parser disagreement across components (Q3).** Where two components deserialize the *same* bytes — a
+  UTXO layer and an EVM relay reading one transaction, a source chain and a destination reading one
+  message — confirm they agree on the interpretation. A payload one side reads as asset X and the other
+  as native gas, or two asset commitments on one output index, mints value one side never debited.
+- **Receipt / marker binding (Q3).** A spent-receipt or nullifier marker must be derived from the
+  *authenticated* source header (shard id, block number, source chain), not from replayable fields.
+  Unbound cross-shard receipts were replayed to mint at L1-consensus scale.
 
 ### 3. Is the accounting conserved across the two sides? (Claim ↔ settlement, solvency)
 - **Mint ⇔ lock invariant.** Total wrapped/minted on all destinations must equal total locked in
   custody on the source. Reconcile live: read the source custody balance and the destination
   mint supply at the pinned point on *each* chain. A gap is stranded value, phantom value, or a live
   hole. This is the bridge's master invariant — encode it.
+- **Amount equivalence — the check that lives in neither chain.** The value *committed on the source*
+  must equal the value *paid on the destination*. This check often exists on neither side by default: a
+  real 2026 drain paid out ~$11.6M against a structurally-valid import blob committing ~$0.01, because
+  the destination verified the proof's *form* but never that source-committed amount == destination
+  payout. For every inbound settlement, find the line comparing the two amounts; its absence is the
+  finding even though every signature and proof verifies.
 - **Credited-before-verified windows.** Does `receive`/`recv` credit or forward before the proof is
   fully checked, or trust an internal credit record that a forged message wrote? The Allbridge-shaped
   seam: the router trusted an internal credit and paid out; a flash loan topped the balance to match

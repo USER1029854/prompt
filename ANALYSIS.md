@@ -326,3 +326,99 @@ wouldn't find more real bugs; it would drown the real ones in noise.
   empty transcripts.
 
 v1 is preserved as `CORE.v1.md` for diffing.
+
+---
+
+# v3 — the full-corpus rebuild
+
+The user asked for exhaustiveness: harvest the whole last-6-months on-chain corpus (excluding
+key/opsec/social/infra), let the data — not two headline hacks — drive the design, and add nothing that
+isn't earned. Five parallel research agents classified the corpus (Feb–Aug 2026) from SlowMist (pages
+1–11), DefiLlama, rekt, vendor postmortems, and per-substrate sweeps, each tagging every incident
+against the v2 taxonomy and, crucially, flagging what *didn't* fit. The definitive harvest counted
+**146 in-scope incidents with realized loss**, distributed:
+
+| class | n | | class | n |
+|---|---|---|---|---|
+| AMOUNT-STALE (oracle / flash-loan price manip) | 37 | | TOKEN-SEMANTICS | 10 |
+| AUTH-MISSING (broken access control) | 23 | | AUTH-ACQUIRABLE (governance capture) | 4 |
+| AMOUNT-MISCOMPUTED (rounding/precision/sign) | 21 | | AMOUNT-UNBOUNDED (donation/first-depositor) | 4 |
+| AUTH-FORGEABLE + Q3 mis-verification | 20 | | ATOMICITY | 3 |
+| AMOUNT-FORGED (unbacked mint) | 16 | | IDENTITY | 2 |
+
+Three MISFITS across all 146, and every one is already covered by v3: **Maya** (six chained flaws plus
+neutralizing the protocol's own safety monitor → composition + Q3, the guard fed bad input to disable
+it); **THORChain** (threshold-signature soundness → the TSS/consensus layer the Cosmos module now puts
+in scope); **ATOHook** (a `rewards` slot colliding with a library's reentrancy-guard sentinel → the
+storage slot-collision case in the EVM module and core Q7). No 147th shape appeared.
+
+## What the corpus said
+
+**The taxonomy held as a sink but mis-weighted the year.** ~90% of incidents classified cleanly into
+authorization-or-amount. But three things were under-billed or missing, and the misfits clustered:
+
+- **The dominant 2026 shape was "the verifier accepted what it should have rejected."** AUTH-FORGEABLE
+  was ~32% of Jun–Aug incidents, but splitting it revealed most were not *forgery* — nothing was forged.
+  The check passed while enforcing the wrong predicate or over the wrong scope: a ZK proof covering 32
+  slots while settlement processed an attacker-controlled subset (Aztec Connect); a validator counting
+  signature *slots* not valid signatures (Harmony); an out-of-range committee id yielding a zero BLS key
+  that verified (Bonzo); an ERC-1271 check whose static-call success was never read (Gnosis Pay); a bond
+  ledger tracking a *count* where identity was required (Lien). v2 had no first-class name for this.
+- **Minting value against nothing was the most common bridge/L1 theft** (Verus, Syscoin, Secret,
+  Harmony, Hyperbridge, Adshares, Oraichain, Allbridge). v2's spine said value *leaves* through an exit
+  — but issuance *creates* value that leaves later on a legitimate path, so an exit-of-transfers audit
+  walks past the mint.
+- **Losses recur across a fleet.** The same bug fixed upstream but live on one instance (Allbridge on
+  Solana), one shared dependency hitting many chains (the Cosmos-EVM precompile cluster; the
+  Compound-fork exchange-rate class across Venus/dTRINITY), a fork that *removed* an upstream check
+  (Secret's CW20-ICS20). A per-exit reading structurally can't see this.
+
+## What changed in the core
+
+The spine was rebuilt from "an exit trusts a wrong **number**" to **three questions asked of every
+exit**, with the exit **redefined to include issuance**:
+
+- **Q1 Authorization & identity** — is the right party acting on the real thing? (missing / forgeable /
+  cheaply-acquirable auth; forged / collided / substituted identity). Identity is promoted from a
+  cross-cutting enabler to a primary axis — in a whole class of thefts (Gravity denom poisoning, Raydium
+  fake mint, TAC counterfeit jetton) the *entire* exploit is an identity collision and no number is
+  wrong.
+- **Q2 Amount & backing** — is the number right *and is what's issued backed*? The four number-failures
+  (stale/forged/miscomputed/unbounded) plus **conservation** (`issued ≤ backing`) as a first-class
+  invariant reconciled against live balances. Lens C also gained the **signed/negative-input** pattern
+  (Aftermath, Dango, Drips, Chi, Denaria — a deposit path that reverses into a withdrawal).
+- **Q3 Does the check itself hold?** — the new **Lens G**. The guard passes, nothing is forged, but it
+  enforces the wrong predicate or a mismatched scope, or counts a proxy for the invariant, or its result
+  is discarded, or the validation mutates state. This is the hardest lens (nothing looks malformed) and
+  the single most common 2026 shape.
+
+Plus a **fleet cross-cutting pass** (version skew / shared dependency / fork-drift-that-removes-a-check),
+a **guard-pricing note** that when the guard is a risk *parameter* the fix is a parameter not code
+(Yieldblox, Term, Moonwell), and an explicit **scope-of-methodology** statement: this finds on-chain
+logic bugs and by construction cannot find the key/opsec/infra compromises that were the four largest
+losses of the period — a clean verdict must say so.
+
+Module sharpening from the substrate sweep: Cosmos-EVM mirrored-balance underflow + caller→account auth
+mapping (KiiChain/BounceBit); the TSS/consensus/bridge-vault layer as in-scope for app-chains (THORChain,
+Harmony); Solana account-aliasing (`require_keys_neq`) and durable nonces; Move VM-level type-safety and
+reward-index inflation; EVM ERC-1271-unchecked-success; Bridge amount-equivalence ("the check in neither
+chain") and parser/receipt-binding.
+
+## What was deliberately NOT added
+
+Discipline mattered as much as coverage. Rejected despite appearing in the corpus:
+- **An intent/solver/batch-auction lens** — no in-scope 2026 headline; the one RFQ case (TrustedVolumes)
+  is plain AUTH-MISSING. Would be padding.
+- **A reorg/finality/sequencer lens** — discussed as risk, no marquee in-scope incident; existing slots
+  would hold it if it occurred.
+- **Cairo/TON/NEAR modules** — one incident each; the core three-questions + bridge module already carry
+  their shapes. A module per chain would be length without yield.
+- **A separate "economic-design" axis** — guard-pricing already handles "the guard is a number, read the
+  number"; only a one-line note (fix-is-a-parameter) was warranted.
+
+The honest headline: across 146 incidents the framework needed **one new axis (Q3), one redefinition
+(issuance as exit), one elevation (conservation), and one new pass (fleet)** — not a rewrite. That the
+corpus mostly *confirmed* the structure is the result, not a failure of it; the additions are the places
+it genuinely didn't.
+
+v2 is preserved as `CORE.v2.md`, v1 as `CORE.v1.md`, for diffing.

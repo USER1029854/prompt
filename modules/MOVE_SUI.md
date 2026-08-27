@@ -63,10 +63,18 @@ the exact class. Mechanics only here; the method is in CORE.md.
 - The math helper library shared across pools (the Cetus bug lived in an open-source liquidity-math
   helper everyone trusted).
 - `public` functions without an `entry`-level review because they're "internal-ish".
+- **Deprecated packages and peripheral shared objects still live.** A reward "spool" nobody had called
+  in 17 months paid out a trillion-fold inflated points and drained its pool; the object model kept the
+  blast radius to that peripheral object, but the object stayed callable. Enumerate deprecated packages
+  and the shared objects they still own. Reward/points-index inflation is the shape to watch.
 - Upgrade/migration functions and the package `init`.
 - Flash-loan / hot-potato patterns: a `Receipt`/hot-potato struct with no `drop`/`store` that must be
   consumed by transaction end — does every path that creates it enforce the repayment invariant, and can
   the intermediate state be acted on (deferred-settlement analog, Lens C)?
+- **VM / verifier level.** Move's linear-resource type safety — the guarantee app auditors lean on
+  (resources can't be forged or duplicated) — has itself been broken at the VM level (a stale
+  module-cache → type-confusion primitive). For a chain running a modified or older Move VM, the VM and
+  bytecode-verifier assumptions are in scope, not just the app code.
 
 ## Tooling
 `sui client`/`aptos` CLI for live object reads at a pinned checkpoint/version; object queries and events

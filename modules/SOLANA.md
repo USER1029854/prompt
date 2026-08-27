@@ -32,10 +32,18 @@ on any one is a seam:
 - **Type / discriminator.** Anchor's 8-byte discriminator distinguishes account types; a native
   program that doesn't tag and check type can be handed one account type where another is expected
   (type confusion). Also check for account substitution between two accounts of the *same* type
-  (e.g. passing the vault's token account where the user's is expected).
+  (e.g. passing the vault's token account where the user's is expected). Event-discriminator checks on
+  cross-program deposit/relayer callbacks belong here too — a missing one lets a forged event be
+  processed as genuine.
+- **Aliasing / distinctness.** Where an instruction takes two account params that must be *different*
+  (a send account and a receive account, source and destination, a pool and its counterparty), does it
+  enforce `key_a != key_b`? Passing the *same* account for both — so a second serialize overwrites the
+  first and state desyncs from the real vault balance — is a recurring Solana drain (`require_keys_neq`
+  absent). Enumerate every pair of accounts the logic assumes distinct.
 
-Enumerate every account of every instruction and tabulate which of the four checks it has. The gaps
-are your Lens C/E findings before you've thought about economics at all.
+Enumerate every account of every instruction and tabulate which of the five checks it has (owner,
+signer, identity/PDA, type, distinctness). The gaps are your Q1/Lens E findings before you've thought
+about economics at all.
 
 ## Deriving the program & state
 - The program is a deployed BPF/SBF binary at a program id; if unverified source, the target is the
@@ -79,11 +87,17 @@ expected ed25519-program instruction over the expected message, not merely that 
 instruction exists.
 
 ## The unread Solana surface (attention inversion)
-- Native (non-Anchor) programs, where the four checks are hand-rolled and easy to omit — Anchor gives
+- Native (non-Anchor) programs, where the checks are hand-rolled and easy to omit — Anchor gives
   owner/signer/discriminator checks by default, native code doesn't.
-- CPI targets where the invoked program id isn't pinned.
+- **Deprecated-but-live programs.** A program the UI stopped calling is still callable at its program id;
+  an old AMM/lending version with a missing account check is a standing drain (real 2026 case: a
+  deprecated AMM's remove-liquidity path accepted a forged LP-mint account). Enumerate old versions.
+- CPI targets where the invoked program id isn't pinned, and third-party SDK callbacks (e.g.
+  ephemeral-rollup undelegation) that don't re-verify PDA seed derivation.
 - The `close`/`realloc`/reinit paths (lifecycle seam).
-- Any instruction that trusts the `Instructions` sysvar or a prior instruction.
+- Any instruction that trusts the `Instructions` sysvar or a prior instruction — and **durable nonces**,
+  which let an attacker hold a validly-signed transaction indefinitely and land it later (a facilitation
+  vector for pre-signed admin/migration actions).
 - Admin/config instructions dismissed as privileged — price the upgrade authority and the admin key.
 
 ## Tooling

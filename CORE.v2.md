@@ -44,79 +44,52 @@ cheap correction, and it is not optional.
 
 ---
 
-## 1. The spine: three questions asked of every exit
+## 1. The spine: money leaves through an exit that trusts a wrong number
 
-Strip every exploit in this class to bone and it is always the same event: **the system parts with
-value, or issues a claim on value, when it should not have.** So the spine is not one question but an
-object and three questions asked of it.
+Strip every exploit in this class to its bones and the same skeleton appears:
 
-The object is the **EXIT**: any path by which value leaves a pool the system holds or controls — a
-transfer, release, payout, redemption, liquidation, a standing approval someone else can pull — **or by
-which the system issues a new claim on value: a mint, a credit, a wrapped-asset issuance, a share
-issuance.** Issuance belongs here because minted value is value the system will part with later on a
-path that is itself perfectly authorized — the attacker just sells what they minted — so if you
-enumerate only the transfer-out functions you miss the mint where the unbacked value was actually
-created, and minting value against nothing was the single most common in-scope theft of the last year.
-Exits are a small, closed set — a dozen or two even in a large system — and theft happens here by
-definition. Enumerate them first (§A gives the method), then ask three questions of each:
+> **Value leaves through an exit. The exit acts on a number. The number is wrong, and nothing on the
+> exit path catches that it's wrong.**
 
-**Q1 — Authorization & identity: is the right party acting on the real thing?**
-Who may trigger this exit, and is the account / asset / message / source it acts on actually what it
-claims to be? This breaks four ways: the authorization is **missing** (no or broken access control);
-**forgeable** (a signature/proof/attestation that can be forged or replayed, or that covers less than
-the code acts on); **cheaply acquirable** (a role, a governance majority, a validator slot, a whitelist
-entry an outsider can buy or bond into — price it, §4); or the **identity is forged, collided, or
-substituted** (the exit acts on a counterfeit token account, a poisoned denom→asset mapping, a
-look-alike or aliased account, a source-message that never came from the real remote). Identity is not
-a modifier on the other bugs — in a whole class of thefts the entire exploit *is* a namespace collision
-or a substituted account, and no number is ever wrong.
+So the audit has three motions, and they compose into one question asked over and over:
 
-**Q2 — Amount & backing: is the number right, and is what's issued actually backed?**
-The exit computes how much leaves or how much it issues. That number goes wrong five ways: **stale** (a
-price/reserve/balance/index/NAV read before the world moved — including mid-transaction, across nested
-contexts, and off a component the accounting no longer reflects); **forged-input** (a value taken from a
-message/quote/report the system trusts rather than measured in hand); **miscomputed** (rounding in the
-caller's favor, a silent shift/cast truncation, a signed/negative input reversing a flow assumed
-one-directional, an overflow or a bounds check with the wrong threshold, precision loss, N small
-operations returning more than one large one, a value acted on inside a batch's transiently-unbalanced
-state); **unbounded** (nothing caps it — an uncapped mint/subsidy/reward, a first-depositor/donation
-inflation, a supply-cap bypass); or **unbacked** (the exit issues or credits more than what backs it —
-the master conservation invariant `issued ≤ backing` fails). For every mint/credit/wrap, find the line
-tying the issued amount to real assets received, locked, or burned; its absence is the finding.
+1. **Enumerate the exits.** Every path by which value leaves any pool the system holds or controls —
+   transfer, release, payout, mint, burn-and-credit, a standing approval someone else can pull, a
+   redemption, a liquidation. This is a small, closed set — a dozen or two even in a large system — and
+   theft happens here *by definition*. Entry points are where an outsider pushes; exits are where money
+   can go, and the exit list is shorter and worth more.
+2. **For each exit, list every number it trusts** — the amount, the price, the share ratio, the
+   collateral value, the reserve, the supply, the debt, the accumulator, the fee, the bound it checks
+   against. Trace each number back to where it is *produced*.
+3. **At each production site, ask the one question four ways: can this number be wrong?**
+   - **Stale** — it crossed a boundary in time or context and the world moved. A price read before a
+     swap this same transaction performs; a reserve an attacker emptied one call earlier; a balance
+     snapshotted before a transfer; a view returning mid-transaction state to an outside reader; a
+     nested execution context whose write the outer context double-counts.
+   - **Forged** — it crossed a trust boundary and the boundary validated the envelope, not the
+     contents. A perfectly valid signature over attacker-authored data; a valid proof against an
+     unconstrained public input or a misconfigured verifying key; a bridge credit tied to a well-formed
+     message with no real burn behind it; an attested amount trusted from a field nobody signed.
+   - **Miscomputed** — it was calculated wrong at an edge. Rounding that favors the caller; floor
+     division or a silent bit-shift/cast truncation that drops value; an overflow/bounds check with the
+     wrong threshold; N small operations that return more than one large one; a value read in an
+     intermediate state a batch is allowed to leave invariant-violating until it "nets out."
+   - **Unbounded** — nothing caps it, and the cap you assumed lives on a different path or a different
+     version. A subsidy/mint/reward computed from a raw amount never capped by the pool's own balance;
+     a "number goes up" path with no ceiling at zero-reserve, zero-supply, first-depositor, or dust.
 
-**Q3 — Does the check itself actually enforce the invariant?**
-This is the one careful auditors walk past, because here **the guard passes and nothing is forged.** The
-check is well-formed, the proof is valid, the amounts are real — and the check enforces a predicate
-subtly different from the invariant, or two subsystems disagree on the scope of what is checked. A ZK
-proof commits to N slots while settlement processes an attacker-controlled M ≤ N. A validator counts
-signature *slots* instead of *valid signatures*. A bond ledger tracks a *count* where it should track
-identity. A signature check reads the recovered address but not the call's *success*, so a failed
-verify passes. A slippage guard sums outputs across a path but double-counts a token reused between
-hops. A validation step has a side effect that grants the very approval it was meant to gate. For every
-guard the exit relies on, write the invariant it is *meant* to enforce, then read what it *literally*
-tests; for every proof or cross-subsystem verification, confirm the scope it covers equals the scope
-the consumer acts on. A check that verifies the wrong thing is invisible to access-control review and
-to signature review both — only this question catches it, and this was the single most common shape of
-the last year's exploits.
+A number reaches an exit through a **seam** — a boundary where one component restates, trusts, or acts
+on a fact another produced. Seams are where staleness and forgery live; the arithmetic of a single
+value operation is where miscomputation and unboundedness live. Both are production sites of wrong
+numbers, and the exit that trusts them is where the money is.
 
-A number, an identity, or a check reaches an exit through a **seam** — a boundary where one component
-trusts a fact another produced. Seams are where staleness, forgery, and scope-mismatch live; a single
-value operation's own arithmetic is where miscomputation and unboundedness live; issuance paths are
-where conservation lives. **This is why component-by-component audits miss these:** each side of a seam
-is correct alone, each rounding step is individually negligible, each subsystem's check passes on its
-own — the disagreement is only visible to someone holding both sides at once. Do not confuse a list of
-individually-cleared contracts with an audit; ten contracts read line-by-line and cleared, with the
-three seams between them never drawn and the core math never evaluated at its edges, is the exact review
-that lets a seven-figure exploit through. Read the components to find the exits, the seams, and the
-math; interrogate those with the three questions to find the money.
-
-Two forces run underneath all three questions and multiply them — treat them as always-on: **atomicity**
-(does a half-failed exit unwind, or does the write survive; what is the atomic unit on this substrate;
-can a nested context double-count) and **composition** (two individually-correct exits chained, or one
-exit's precondition supplied by another). And one force sits *above* a single exit: the **fleet** — the
-same exit deployed on many chains, the fix landed upstream but not in this artifact, one shared
-dependency replicated across many protocols. A per-exit reading cannot see the fleet; §5's cross-cutting
-pass makes you look.
+**This is why component-by-component audits miss these.** Each side of a seam is correct alone; the
+disagreement is only visible to someone holding both. Each rounding step is individually negligible;
+the loss is only visible to someone who does the arithmetic across the whole path at the edges. **Do
+not confuse a long list of individually-cleared contracts with an audit.** Ten contracts read
+line-by-line and cleared, with the three seams between them never drawn and the core math never
+evaluated at its edges, is the exact review that lets a seven-figure exploit through. Read the
+components to find the exits, the seams, and the math; interrogate those to find the money.
 
 ---
 
@@ -134,25 +107,20 @@ list.
    dependency the system trusts). Per row: what it is, how you reached it, whether it holds value /
    authority over value / live approvals / is inert, proxy status and implementation, and where its
    code sits on disk.
-2. **Exits** — every path value leaves by *or is issued by* (§1): transfers, releases, payouts,
-   redemptions, liquidations, standing approvals — **and every mint / credit / wrap / share-issuance.**
-   Per row: what authorizes it (Q1), what bounds the amount and what backs any issuance (Q2), the
-   guards it relies on (Q3, pointers into register 5), and the numbers it trusts (register 4).
-3. **Seams** — every trust boundary a number, identity, or checked-fact crosses (§1). Per row: the two
-   sides, the fact that crosses, what's assumed to survive the crossing.
+2. **Exits** — every path value leaves by (§1.1). Per row: what authorizes it, what bounds the amount,
+   and the numbers it trusts (pointers into register 4).
+3. **Seams** — every trust boundary a number crosses (§1). Per row: the two sides, the fact that
+   crosses, what's assumed to survive the crossing.
 4. **Numbers** — every value-bearing quantity an exit or a guard depends on. Per row: where produced,
-   how (the formula/source), and its verdict on stale / forged / miscomputed / unbounded / unbacked,
-   with the cited line that settles each.
+   how (the formula/source), and its verdict on stale / forged / miscomputed / unbounded, with the
+   cited line that settles each.
 5. **Guards** — every mechanism meant to stop an attacker (access checks, timelocks, caps, TWAPs,
    deviation bounds, signature/proof checks, invariant assertions, reentrancy locks, supply/solvency
    checks, overflow/bounds checks). Per row: what it protects, **its dollar cost to defeat or acquire,
    read from live state** (§4), and who can change or remove it, how fast.
 6. **Invariants** — what must hold for honest users not to be robbed, each a checkable relation over
-   readable state (these become executable in §6). "X never exceeds Y." "Shares out ≤ value in." "This
-   role is only whoever the deployer set." **Always include the master conservation invariant —
-   `total issued/minted/credited ≤ total backing (locked, received, or burned)` — reconciled against
-   live balances; its violation is the dominant bridge/mint theft and it is checkable now, not only at
-   exploit time.**
+   readable state (these become executable in §6). "X never exceeds Y." "Every credited unit is backed
+   by a received unit." "Shares out ≤ value in." "This role is only whoever the deployer set."
 7. **Failure sites** — every place value-bearing state is written near something that can fail, and
    every place a return value or error can be discarded. Per row: the atomic unit here, and what
    survives if the risky step fails (§5, Lens D).
@@ -270,22 +238,12 @@ exploit path. The path is how you prove it; the price is what makes it worth pro
 depends on a live number (a float, a reserve, a quorum, a threshold constant), cite the number and the
 point you read it, and note who can change it and how fast.
 
-**When the guard *is* a parameter, the fix is a parameter, not code.** A whole class of losses came from
-code that ran exactly as written on a bad assumption — an oracle sourced from a market too thin to
-defend, collateral valued off a token whose float one trade moves, a governance token so sparsely held
-that control costs bus fare. These are real findings, but their remedy is a risk parameter (a deeper
-oracle, a supply/liquidity floor, a distribution requirement), not a code patch. Say which it is, or the
-team fixes the wrong artifact.
-
 ---
 
-## 5. The seven lenses — run each over the exits, seams, and numbers, with a denominator and a kill quota
+## 5. The six lenses — run each over the exits, seams, and numbers, with a denominator and a kill quota
 
-The lenses are the detection toolkit for the three questions of §1: **A, E** serve Q1 (authorization &
-identity); **A, B, C, F** serve Q2 (amount & backing); **B, G** serve Q3 (does the check hold); **D**
-(atomicity) and the fleet pass are the always-on forces underneath and above. Run the lenses a seam or
-exit's row marks applicable. Two rules make this real work rather than a checklist, and they are the
-floor on effort that replaces "there's definitely a bug here":
+Two rules make this real work rather than a checklist, and they are the floor on effort that replaces
+"there's definitely a bug here":
 
 - **Denominator.** Each lens produces a *count* before any disposition: N exits, N reader/writer pairs,
   N guarded actions, N failure sites, N rounding sites, N edges. "No composition is exploitable" is a
@@ -333,11 +291,6 @@ last year. For every value computation on an exit path:
 - **Overflow/underflow and check thresholds.** Where the language doesn't abort by default, or where a
   hand-rolled bounds check gates the math — read the actual constant and evaluate it at the boundary,
   not in the middle.
-- **Signed / negative inputs.** Does the code assume a value is positive or unsigned when a signed or
-  negative input can reverse a flow it treats as one-directional? A negative fee credited as collateral,
-  a negative donation that pulls funds out instead of in, an `int`→`uint` cast across the sign boundary
-  — each turns a deposit path into a withdrawal. Check every amount that can be negative and every
-  signed↔unsigned cast on a value path.
 - **Splitting.** Where an operation divides into many smaller ones, compute whether N small calls return
   more than one large call for the same input. Contracting state and directional rounding make
   splitting profitable in ways single-call reading never reveals; dozens of micro-operations in one
@@ -398,51 +351,6 @@ chose?
   anything behind a role dismissed as "privileged" without pricing the role.
 *Count: dependency edges (and how many cross boundaries); degenerate live states; unread surfaces.*
 
-### Lens G — The check that passes but doesn't hold (Q3)
-The hardest lens, because there is nothing malformed to notice — the input is valid, the proof verifies,
-the amounts are real. The bug is that the check enforces a predicate different from the invariant, or
-two parts of the system disagree on the scope of what was checked. This was the single most common shape
-of the last year's exploits, and it is invisible to both access-control review and signature review.
-- **Predicate ≠ invariant.** For each guard the exits rely on, write the invariant it is *meant* to
-  enforce in one line, then read what it *literally* tests. A validator that counts signature *slots*
-  rather than valid signatures; a ledger that tracks a bond *count* where identity was required; a
-  health check with a zero-value branch that accepts an empty-but-indebted position as "healthy"; a
-  uniqueness check that validates format but never queries the existing set for a collision — each
-  passes while the invariant is false. A check that counts or aggregates a *proxy* for the invariant
-  instead of the invariant itself is the recurring form.
-- **Scope / set / range mismatch across subsystems.** Where a producer verifies over one set and a
-  consumer acts over another, confirm the two sets are identical. A proof commits to N public-input
-  slots; settlement traverses an attacker-controlled M ≤ N. A verifier covers a message body; the code
-  acts on an unsigned trailing field. An aggregate (slippage, collateral, fees) is computed over members
-  assumed distinct but made to alias. A parser on one component reads bytes the other component
-  deserializes differently.
-- **The result of the check is discarded.** The verify runs and its outcome is ignored — a static-call
-  whose success bool is unchecked so a failed signature check "passes," a return value dropped. (Shares
-  a border with Lens D; the point of view here is the *guard*, not the state write.)
-- **The check that mutates.** A validation step whose own side effect establishes what it was meant to
-  gate — grants an approval, sets a flag, advances a state — so the guard becomes the exploit primitive.
-- **Detection.** State, per guard, the tuple {invariant meant · predicate actually checked · scope
-  verified · scope acted-on}. Any row where the last three don't all match the first is a finding
-  candidate. Mechanically enumerable from the exits' guard list; this is where valid-proof and
-  passing-check exploits live.
-*Count: guards and cross-subsystem verifications; per one, the {meant, checked, scope-in, scope-out} row.*
-
-### Cross-cutting — the fleet: one bug, many deployments
-A per-exit audit sees one artifact; real losses recur because a fix or a flaw propagates across a fleet.
-Run this once over the whole system:
-- **Version skew.** The same system is deployed on several chains/instances. Verify implementation,
-  config, and the presence of every known fix on **every** deployment — not by matching an address; the
-  weakest deployment governs. A patched-upstream-but-unpatched-here instance is a live finding with its
-  postmortem already written.
-- **Shared dependency.** One framework, library, oracle-wrapper, or fork-template reused across many
-  protocols means a bug in it is a bug in all of them. Pin its exact version, pull its advisory list,
-  confirm each fix is present in **this** running artifact. A published, unapplied advisory in a shared
-  dependency is the single highest-probability finding in any system.
-- **Fork drift.** A fork inherits its parent's bugs and rarely its parent's fixes — and sometimes
-  *removes* a check the parent had. Diff against the **original upstream**, not just the fork's own repo;
-  a deleted guard is the finding.
-*Count: deployments of this system; shared dependencies; per one, fix-presence verified in the artifact.*
-
 ### The seven questions, folded in (ask of the whole system, not as a separate pass)
 1. What makes a number go up, at the edges (Lens F). 2. Whether a credit matches what arrived (Lens B).
 3. Where the same thing is done twice — mint vs burn, deposit vs withdraw, open vs close, `_v92` vs
@@ -457,12 +365,10 @@ contract with live allowances is a target).
 **Token, chain, and language semantics** are seams too, run per value path and per deployment:
 fee-on-transfer, rebasing, transfer hooks handing execution to the counterparty mid-transfer,
 double-entry-point tokens, blocklists, non-standard decimals disagreeing across a math path, tokens
-returning false instead of reverting, `permit` that silently no-ops; and — the single most common
-low-cap drain — a **deflationary / burn / reflection token whose real balance moves while an AMM's
-cached reserve does not**, so a later `sync`/`skim` prices off a reserve that no longer matches the
-balance. Per chain: whether `block.number`/time mean what the code assumes, sequencer/finality/reorg
-behavior, mempool visibility, gas-token and precompile differences. Per language: the arithmetic
-defaults (where overflow aborts vs wraps vs truncates). The substrate modules carry the specifics.
+returning false instead of reverting, `permit` that silently no-ops; per chain, whether
+`block.number`/time mean what the code assumes, sequencer/finality/reorg behavior, mempool visibility,
+gas-token and precompile differences; per language, the arithmetic defaults (where overflow aborts vs
+wraps vs truncates). The substrate modules carry the specifics.
 
 ---
 
@@ -573,15 +479,6 @@ anything depending on another user happening to trade mid-exploit; a privileged 
 non-acquirable power. Read this narrowly — excluded is an attack whose *substance* is ordering; **if the
 same defect would still be a defect in a private mempool, it is in scope.**
 
-**Scope of the methodology itself.** This finds on-chain logic bugs — the exit whose authorization,
-amount, or check was wrong. It does **not** find, and cannot find, what by dollars is most of the theft
-in this ecosystem: private-key and signer compromise, phishing and social engineering, malicious
-insiders, and infrastructure (RPC, DNS, CI, frontend, hardware-wallet) compromise. Several of the
-largest losses of the last year left through those doors while every contract behaved exactly as
-written. A clean verdict here means the *code* has no open exit — it says nothing about the keys, the
-operators, or the pipeline, and your write-up must say so rather than let "audited, clean" be read as
-"safe."
-
 ### Severity and proof-state
 Severity is measured against the value the broken invariant protects, not what your PoC moved. Ask what
 becomes possible once the invariant is false; anchor to funds at risk *now*. A chain of links is **one
@@ -622,20 +519,15 @@ amount at risk, computed from live balances you re-read at head.
 
 **Checks — run when each artifact is written, not retrospectively** (retrospective checking reviews your
 own verdict and validates it; run these while there's no conclusion to defend):
-- Are the exits enumerated as a closed set — **including every mint/credit/wrap, not only transfers-out**
-  — and does every exit have all three questions answered (Q1 authorization & identity, Q2 amount &
-  backing, Q3 does-the-check-hold)? Is the Numbers register's stale/forged/miscomputed/unbounded/unbacked
-  verdict filled with a cited line each?
-- Is the master conservation invariant (`issued ≤ backing`) reconciled against live balances now, not
-  only theorised for exploit time?
-- Does every guard have a **price in dollars from live state**, and a who-can-change-it-how-fast? For
-  each, the Lens G tuple {invariant meant · predicate checked · scope verified · scope acted-on} — do
-  the last three match the first?
+- Are the exits enumerated as a closed set, and does every exit have its trusted numbers traced to
+  production? Is the Numbers register's stale/forged/miscomputed/unbounded verdict filled with a cited
+  line each?
+- Does every guard have a **price in dollars from live state**, and a who-can-change-it-how-fast?
 - Every set claim — only holder, only callee, nothing whitelisted, N children: event-reconstruction on
   disk, or `UNVERIFIED`?
 - Every Inventory row: a source dir or decompilation on disk, file count == row count?
-- Fleet pass run: every deployment's fix-presence verified in its own artifact, every shared
-  dependency's advisory list checked against the running code, every fork diffed against **upstream**?
+- Every dependency: exact version pinned, advisory list pulled, each fix confirmed present in the
+  running artifact?
 - Each lens: a count stated, every counted item dispositioned, the kill quota met per material seam/exit
   with each kill citing a line? Rounding sites given a direction and a beneficiary?
 - Dependency edge list built by grep, counted, cross-boundary edges flagged?
@@ -687,11 +579,8 @@ endpoints). Use the tools you find fit for; install what's absent.
 
 ## The one thing to remember
 
-The system parts with value, or issues a claim on value, through an **exit**. Ask three things of every
-exit: is the right party acting on the real thing (authorization & identity), is the number right and
-backed (amount & backing), and does the check that guards it actually enforce the invariant (or does it
-pass while verifying the wrong thing). Enumerate the exits — issuance included — price every guard in
-dollars, reconcile what's issued against what backs it, diff each check against the invariant it's meant
-to enforce, look across the fleet for the same bug in a second deployment, warp the clock, execute
-against real state, and argue the other side. Then report only what you proved — and if that's nothing,
-say where you'd bet you're wrong.
+Money leaves through an exit that trusts a wrong number. A number is wrong because it crossed a boundary
+and went stale or forged, or because it was computed wrong at an edge and in the caller's favor.
+Enumerate the exits, trace every number they trust back to where it's made, price every guard in
+dollars, warp the clock, execute against real state, and argue the other side. Then report only what you
+proved — and if that's nothing, say where you'd bet you're wrong.

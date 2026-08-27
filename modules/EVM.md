@@ -30,12 +30,20 @@ any flash-loan-and-settle-at-end pattern — let an attacker act on state *while
 unbalanced*. Identify every such mechanism; ask what an outsider can do inside the unsettled window
 (price off a pool mid-batch, mint/redeem against a transiently-wrong balance) before the net-settle.
 
-## Proof / verifier seams (Lens B)
+## Proof / verifier seams (Lens B + Lens G)
 Where a contract verifies a Merkle proof, a ZK proof, or an external attestation: confirm every public
 input the contract acts on is *constrained by* the proof (an unconstrained public input under a valid
 proof is attacker-controlled); confirm the verifying key / merkle root / trusted signer is the expected
 one and not settable to an attacker's; confirm a valid proof over attacker-chosen inputs is still
 rejected. A verifier misconfiguration authorizes withdrawals against a perfectly valid proof.
+The check-that-doesn't-hold (Lens G) forms recur on the EVM specifically as:
+- **ERC-1271 `isValidSignature` whose static-call success is unchecked** — a failed verify returns a
+  falsy/empty result the caller reads as valid, bypassing a smart-account/module auth gate.
+- **Scope mismatch** — a proof or signature covers N entries while the settlement/consumer loop
+  processes an attacker-controlled M ≤ N (verify what the proof commits to equals what the code
+  traverses).
+- **Counts a proxy for identity** — a guard that checks a count/length where it must check identity or
+  uniqueness (a bond ledger keyed by count, a "seen" set never actually queried before the credit).
 
 ## Deriving contracts from the target
 - Runtime code + verified source: the chain's own explorer verification for that exact address, full
@@ -94,7 +102,11 @@ library-fixed-slot contracts. Across an upgrade, diff layout: a variable inserte
 resized makes live storage mean something the new code doesn't expect. Check ERC-7201 namespaced
 roots, EIP-1967 slots, and any constant-hashed slot from your constant extraction. An initializer
 callable on the implementation directly, or an `_initialized` slot a migration left at zero, is a
-lifecycle seam.
+lifecycle seam. **Slot collision** is a live drain, not just an upgrade hazard: a `mapping`/variable
+whose slot coincides with a library's fixed sentinel slot (e.g. a reentrancy guard writing a huge
+locked-constant that is then read back as a user's reward/balance) turns the guard itself into the
+exploit. For every fixed-slot library the contract inherits, compute its slot and confirm nothing in
+the contract's own layout lands on it.
 
 ## The unread EVM surface (attention inversion)
 - `_v1`/`_v2` sibling functions where one caps or checks and the other doesn't.
