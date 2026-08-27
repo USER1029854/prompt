@@ -10,7 +10,8 @@ verdict with a Null Report.
 ```
 CORE.md                     the audit method. Read first. Spine: exits -> the numbers they trust -> the
                             four ways a number is wrong (stale / forged / miscomputed / unbounded).
-CORE.v1.md / CORE.v2.md     previous versions, kept for diffing (v1 seam-first, v2 wrong-number spine).
+CORE.v1/v2/v3.md            previous versions, kept for diffing (v1 seam-first, v2 wrong-number
+                            spine, v3 three-question spine; v4 = external-review calibration).
 modules/
   EVM.md                    proxies, factories, guard pricing, storage, callbacks, unchecked/rounding,
                             deferred settlement, proof verifiers

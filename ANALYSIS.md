@@ -422,3 +422,71 @@ corpus mostly *confirmed* the structure is the result, not a failure of it; the 
 it genuinely didn't.
 
 v2 is preserved as `CORE.v2.md`, v1 as `CORE.v1.md`, for diffing.
+
+---
+
+# v4 — acting on external review
+
+A round of external critique (three reviewers) landed on v3. Most of it was sharp; some predated the
+146-incident corpus and assumed "hacks are mainly direct contract code." Judged against what we actually
+found, and against the standing principle that the prompt must **not lead the auditor toward specific
+known bugs** (every incident is different; naming last year's steers toward it and away from the novel
+one). Verdicts:
+
+## Adopted
+
+- **Cut §0's base-rate prior.** The strongest critique. "Most systems have a live path / expect to find
+  something" is (a) uncitable — our corpus is survivorship (already-exploited protocols), so it says
+  nothing about an arbitrary target's base rate; (b) miscalibrated for a blue-chip's fifth audit; and
+  (c) the exact suggestibility lever the rest of the document disclaims. Replaced with a symmetric
+  mandate: effort is mandatory, the conclusion is free, *carry no prior either way*. The three
+  mechanisms (denominators, kill quota, Null Report) already supply the anti-skim floor without a
+  probability claim.
+- **Strip uncitable frequency superlatives** ("the two largest pure-code losses…", "the single most
+  common shape of the last year", "the single most common low-cap drain"). These both break the
+  document's own evidence rule and steer toward known bugs — the precise failure the user has flagged
+  since the first message. Kept the *general checks*; removed the *statistics* that told the auditor
+  what to expect.
+- **Governance pricing, two fixes.** (1) Price capture by the *cheaper* of open-market float **and the
+  protocol's own deposit-to-votes/mint/wrap path** — the latter is how thin-governance captures actually
+  happen (Term, Token of Power minting 10B in one tx). (2) Cheap votes are a finding *only when the
+  timelock can't save users* — connected the float check to the timelock/exit-window check, which kills
+  the false positive of flagging every low-float token.
+- **Warp rule, split by kind.** Mechanical time (vesting, epochs, a message that only needs to sit) has
+  no defender → warp freely. A reaction-window delay (governance/pause timelock whose purpose is human
+  veto) is a real guard → don't silently delete the defender's turn; price whether the reaction is real,
+  and if the path only works because the veto never fires, report it *contingent on that*. Plus the
+  honesty caveat that the fork freezes market prices while advancing only the clock.
+- **Value-destruction scoped to a beneficiary.** "Counts even where attacker gain is small" now requires
+  *someone comes out ahead at users' expense*; pure no-beneficiary destruction (bricking, freezing, a
+  chain halt) is explicitly griefing/DoS → the team's lane, in scope only as a lever inside a theft
+  chain. Resolves the contradiction with the out-of-scope list and gives liveness an explicit home.
+- **Presumptive finding.** §4's "a mispriced guard is a finding before you have a path" now reads
+  *presumptive* finding, carried to §6/§8 to be confirmed by the path/PoC or labeled `UNPROVEN` —
+  reconciling it with the execution-gates-reporting rule.
+- **Kill quota scaled, not flat.** Reframed from "three per lens per seam" (ritual on trivial seams,
+  gameable) to *proportional to what the seam controls, with a floor that no material value-mover gets
+  zero*. Keeps the anti-skim force where it matters, drops the busywork.
+- **Substrate leaks.** "The chain's own verification attests" generalized to reproducible-build/program-
+  hash binding for Cosmos/Solana/Move, not just EVM explorers. §A gained intake for the other named
+  inputs (bare address, chain+height+binary, two bridge endpoints), each pinning its own state.
+- **Trimmed the seven questions** to the three techniques the lenses don't otherwise force (compare
+  siblings, read constants as secrets, count approvals as value) — the other four were pure lens
+  restatements, so this removes a whole overlapping taxonomy and the reconciliation load with it.
+
+## Considered and declined (with reason)
+
+- **"The exit-first / number-first spine is an overstated universal law."** Already resolved in v3: the
+  spine is three co-equal questions, and Q1 (authorization & identity) is *first*, not subordinate — a
+  missing `onlyOwner` is a wrong *caller*, which Q1 owns outright. The v4 §0 rewrite removes the last
+  number-first lean. No structural change needed; the critique was reading v2's "wrong number" spine.
+- **"Make control-capture a co-equal hunt."** It already is (Q1). Adopted only the sharper governance
+  *pricing* underneath it.
+- **Softening the fleet "highest-probability finding" claim** — kept as "among the highest," because it
+  is a *logical* claim (a public unpatched advisory is by definition highly likely present), not an
+  uncited corpus statistic, and it drives a concrete, cheap, high-yield check.
+
+Net: v4 is almost entirely subtraction and calibration — no new lens, no new axis. It removes the two
+places the document held itself to a lower evidentiary bar than it holds the auditor (the base-rate
+prior, the frequency superlatives), and sands the two spots that move real findings toward or away from
+the report (governance pricing, warp). v3 is preserved as `CORE.v3.md`.

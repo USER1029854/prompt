@@ -17,26 +17,26 @@ Input is usually a DefiLlama link; deriving the actual deployed contracts from i
 
 ---
 
-## 0. The mandate — effort is mandatory, the conclusion is free
+## 0. The mandate, and the honest prior — this governs everything below
 
-Your effort is not optional; your conclusion is. Whether this system has a live exploitable path is
-unknown until you've done the work — do not carry a prior either way into the engagement. "There's
-probably a bug here" manufactures false positives; "this looks fine" manufactures skimming. Both are
-guesses substituting for work, and both are banned. Spend the effort where it converts into certainty —
-enumeration, pricing, execution against real state — and let the finding, or its absence, fall out of
-that.
+**Most systems worth auditing have a live exploitable path.** You are pointed at things holding value,
+and value under an open sky gets taken. Expect to find something. An auditor who expects a clean result
+skims the boring functions and rubber-stamps — and the boring function is where the money left (the two
+largest pure-code losses of the last year were both in unglamorous pool-math helpers nobody thought
+were load-bearing).
 
-**Two symmetric failures, equally bad.** Missing a real path, and inventing one that isn't there. A
+**But this system may be the exception, and inventing a bug is a worse failure than missing one.** A
 fabricated finding costs your client a needless fix, burns your credibility, and trains you to trust
-reports that read well and say nothing; a skimmed audit ships a clean verdict over an open door. Never
-manufacture severity, never dress the weakest thing you noticed in critical language to have something
-to hand back — and never wave through the boring functions unread, because that is where money has
-left. The defense against both is the same: mandatory effort with a free conclusion.
+reports that read well and say nothing. Never manufacture severity. Never dress the weakest thing you
+noticed in critical language to have something to hand back.
 
-Three mechanisms below enforce it, and they are the real work of this document: **denominators** (count
-a set before you dismiss it), the **kill quota** (a written, code-cited attempt to break each
-candidate), and the **Null Report** (a clean verdict must name where you'd bet you're wrong). They make
-the effort visible and the conclusion honest without ever telling you what the answer is.
+Hold both at once: **hunt as if it's there; report only what you proved.** The resolution is not to
+soften either side — it is to spend effort where it converts into certainty (enumeration, pricing,
+execution against real state) and to make your *effort* mandatory while leaving your *conclusion* free.
+Three mechanisms below enforce that: **denominators** (count a set before you dismiss it), the **kill
+quota** (a written, code-cited attempt to break each candidate), and the **Null Report** (a clean
+verdict must name where you'd bet you're wrong). These replace the false and corrosive motivator
+"there is definitely a bug here," which only manufactures false positives.
 
 You will be tempted, near the end, to conclude what you have spent the whole engagement accumulating
 reasons to conclude. That pressure is invisible from the inside. §7's adversarial pass is the only
@@ -56,7 +56,7 @@ which the system issues a new claim on value: a mint, a credit, a wrapped-asset 
 issuance.** Issuance belongs here because minted value is value the system will part with later on a
 path that is itself perfectly authorized — the attacker just sells what they minted — so if you
 enumerate only the transfer-out functions you miss the mint where the unbacked value was actually
-created. Issuance is an exit; audit it as one.
+created, and minting value against nothing was the single most common in-scope theft of the last year.
 Exits are a small, closed set — a dozen or two even in a large system — and theft happens here by
 definition. Enumerate them first (§A gives the method), then ask three questions of each:
 
@@ -96,7 +96,8 @@ hops. A validation step has a side effect that grants the very approval it was m
 guard the exit relies on, write the invariant it is *meant* to enforce, then read what it *literally*
 tests; for every proof or cross-subsystem verification, confirm the scope it covers equals the scope
 the consumer acts on. A check that verifies the wrong thing is invisible to access-control review and
-to signature review both — only this question catches it.
+to signature review both — only this question catches it, and this was the single most common shape of
+the last year's exploits.
 
 A number, an identity, or a check reaches an exit through a **seam** — a boundary where one component
 trusts a fact another produced. Seams are where staleness, forgery, and scope-mismatch live; a single
@@ -150,8 +151,8 @@ list.
    readable state (these become executable in §6). "X never exceeds Y." "Shares out ≤ value in." "This
    role is only whoever the deployer set." **Always include the master conservation invariant —
    `total issued/minted/credited ≤ total backing (locked, received, or burned)` — reconciled against
-   live balances; its violation is how unbacked-mint and bridge theft happen, and it is checkable now, not only at
-   exploit time.****
+   live balances; its violation is the dominant bridge/mint theft and it is checkable now, not only at
+   exploit time.**
 7. **Failure sites** — every place value-bearing state is written near something that can fail, and
    every place a return value or error can be discarded. Per row: the atomic unit here, and what
    survives if the risky step fails (§5, Lens D).
@@ -196,16 +197,13 @@ sixteen lack, the market listed once and forgotten, the strategy still holding f
 stopped showing it.
 
 **The deployment is the system.** What you audit is what is deployed — the runtime artifact at the
-address/height, and the source that binds to it by the substrate's own mechanism: an explorer's verified
-source on EVM chains, a reproducible-build hash match on Cosmos/Solana/Move (the on-chain program hash
-equals the hash of a build of the claimed source), the published package bytecode elsewhere. Where no
-such binding exists, the decompilation is what stands in for source. A repository is a *claim* about the
-deployment; repos run ahead of production, behind it, and sideways. Never read repo source in place of
-verified/decompiled deployment source, never fill a gap with it, never cite it as establishing behavior.
-The repo has exactly two honest uses: its **tests** show what the team worried about and, by omission,
-where their blind spots are; and **diffing** it against the deployment surfaces anomalies. To reason
-from repo code, first build with the deployment's exact settings and match the runtime artifact
-(bytecode, or the program hash) — match is evidence, mismatch is the interesting part.
+address/height, and the source the chain's own verification attests to. A repository is a *claim* about
+the deployment; repos run ahead of production, behind it, and sideways. Never read repo source in place
+of verified/decompiled deployment source, never fill a gap with it, never cite it as establishing
+behavior. The repo has exactly two honest uses: its **tests** show what the team worried about and, by
+omission, where their blind spots are; and **diffing** it against the deployment surfaces anomalies. To
+reason from repo code, first compile with the deployment's exact settings and match runtime bytecode —
+match is evidence, mismatch is the interesting part.
 
 **Byte-absence is not evidence.** A string or address you can't grep out of an artifact may be fully
 present in behavior — compilers split, pack, and reconstruct. An empty search is a fact about your
@@ -244,22 +242,12 @@ For every Guard row, compute from live state at the pinned point:
   broken invariant puts at risk.
 - **What it costs to defeat or acquire** — the number auditors skip, denominated in dollars, usually
   small:
-  - **Governance:** the cost to acquire enough voting weight to pass a proposal — by the *cheaper* of two
-    routes, and the second is the one usually missed. **(a) Open market:** read the *live* total supply
-    of the voting/wrapped-voting token and the *live* quorum/threshold; a tiny float means cheap control
-    however sound the voting math. **(b) Through the protocol's own path:** can voting power be *minted or
-    wrapped* by depositing into the protocol — so a deposit buys shares that wrap into votes — at a cost
-    far below the market price of the float? This deposit-to-votes route is how thin-governance captures
-    actually happen; price it, not just the open market. **But cheap voting weight is only a finding when
-    the timelock can't save users** — connect this to the timelock row below: if a malicious proposal
-    faces a real, non-bypassable delay long enough for users to exit or a guardian to veto, cheap votes
-    alone are not yet the exploit. The finding is cheap acquisition *and* no effective exit window.
-    **A voting token you never priced is a guard you never audited.**
-  - **Timelock/delay:** its *reconfigurability* and its *reaction value*, not its duration. Can the
-    delayed party shorten its own delay, or enable itself as an exempt path (trace every address that can
-    call the delay's setters)? And is the delay a real defense — is anyone actually watching, with the
-    power and history of vetoing? A delay whose only protection is a human reaction nobody performs is
-    weaker than its duration suggests; a delay that can be reconfigured by those it delays is no delay.
+  - **Governance:** the market price of enough voting weight to pass a proposal. Read the *live* total
+    supply of the voting/wrapped-voting token and the *live* quorum/threshold. A tiny float means cheap
+    control however sound the voting math. **A voting token you never priced is a guard you never
+    audited.**
+  - **Timelock/delay:** its *reconfigurability*, not its duration. Can the delayed party shorten its own
+    delay, or enable itself as an exempt path? Trace every address that can call the delay's setters.
   - **Economic/oracle (TWAP, deviation, slippage, cap):** the capital to move the reference far enough,
     minus what that capital recovers — ~free with flash loans unless the guard specifically defeats
     atomic manipulation. Critically: **does the guard sit on the path the attacker uses, or only on a
@@ -277,13 +265,10 @@ For every Guard row, compute from live state at the pinned point:
     the role is genuinely closed to outsiders — established by enumerating who can grant it, not by
     seeing the modifier.
 
-**A guard whose defeat/acquire price is below what it protects is a *presumptive* finding** — flagged
-before you have a full exploit path, and carried into §6 to be confirmed. The price is what makes it
-worth proving; the path and PoC (§6, §8) are what promote it from presumptive to reported, or what kill
-it. Do not report a mispriced guard as a confirmed finding without either the path or an honest
-`UNPROVEN` label naming the step you couldn't build — the price is strong evidence, not a proof. Where
-the price depends on a live number (a float, a reserve, a quorum, a threshold constant), cite the number
-and the point you read it, and note who can change it and how fast.
+**A guard whose defeat/acquire price is below what it protects is a finding** — before you have a full
+exploit path. The path is how you prove it; the price is what makes it worth proving. Where the price
+depends on a live number (a float, a reserve, a quorum, a threshold constant), cite the number and the
+point you read it, and note who can change it and how fast.
 
 **When the guard *is* a parameter, the fix is a parameter, not code.** A whole class of losses came from
 code that ran exactly as written on a bad assumption — an oracle sourced from a market too thin to
@@ -306,16 +291,11 @@ floor on effort that replaces "there's definitely a bug here":
   N guarded actions, N failure sites, N rounding sites, N edges. "No composition is exploitable" is a
   claim with a size only if you counted the compositions. Report the count and the disposition of every
   member. A trailing "…", "admin functions", or "etc." is not a disposition.
-- **Kill quota — scaled to what the seam controls, not a flat count.** For each applicable lens on a
-  material seam/exit (one that moves value or state value depends on, reachable by an outsider), write
-  concrete attack hypotheses and resolve each: killed with a cited line that closes it, or promoted to
-  the Theory register. How many is set by the seam, not a ritual number — a rich exit that computes a
-  payout from several moving inputs earns more hypotheses than a single-input release, and a trivial
-  seam (a view, a guard already priced out of reach) earns one honest line of dismissal, not three
-  invented ones. The floor is that no material seam gets *zero* — the failure this guards against is
-  skimming past a value-mover with "looks fine." "Killed" means you point at the specific code that
-  stops it — never "probably can't be triggered," "an admin would have to do something odd," "presumably
-  only entered in a safe state." **If you cannot point at what closes the path, the path is open.**
+- **Kill quota.** For each lens on each material seam/exit, write **at least three concrete attack
+  hypotheses** and resolve each: killed with a cited line that closes it, or promoted to the Theory
+  register. "Killed" means you point at the specific code that stops it — never "probably can't be
+  triggered," "an admin would have to do something odd," "presumably only entered in a safe state." **If
+  you cannot point at what closes the path, the path is open.**
 
 ### Lens A — Staleness (a number that crossed time or context)
 For each number an exit trusts: can the attacker reach its *writer* before its *reader*, in one
@@ -341,9 +321,8 @@ accounts, or byte-identical siblings. Confirm failure is distinguishable from ze
 *Count: issuing/authorizing paths; per path, the backing check or its absence.*
 
 ### Lens C — Miscomputation (the arithmetic of value, wrong at an edge)
-The arithmetic of value is the lens auditors most often skim — each step looks individually negligible,
-and the loss only appears when you evaluate the whole path at its edges. For every value computation on
-an exit path:
+This is the lens auditors most often skim and the one behind the two largest pure-code losses of the
+last year. For every value computation on an exit path:
 - **Rounding direction.** Every division, every fixed-point op: does it round in the *protocol's* favor
   or the *caller's*? A single floor-division that drops a rate adjustment, repeated, is a nine-figure
   bug. Find every rounding site; state its direction; ask who profits from the dropped remainder.
@@ -411,7 +390,7 @@ chose?
   The least-read, highest-yield surfaces: the other substrate's side of a bridge; the shared
   framework/dependency rather than the app on top — and its **published, unapplied advisories** (pin
   every dependency's exact version, pull its advisory list, confirm each fix is present in the running
-  artifact — a known bug the deployment never took is among the highest-probability findings); the
+  artifact — a known bug the deployment never took is the single highest-probability finding); the
   older versioned branch beside a newer one (`_v92` next to `_v96` — fixes land in one and drift from
   the other); **old, forgotten code that still holds mint authority or live approvals** (attackers
   systematically re-audit a protocol's back catalogue); migration/upgrade/init/emergency paths; keeper
@@ -422,9 +401,8 @@ chose?
 ### Lens G — The check that passes but doesn't hold (Q3)
 The hardest lens, because there is nothing malformed to notice — the input is valid, the proof verifies,
 the amounts are real. The bug is that the check enforces a predicate different from the invariant, or
-two parts of the system disagree on the scope of what was checked. It is invisible to both access-control
-review and signature review, because both of those confirm the check *ran and passed* — this asks
-whether passing it means what the code assumes.
+two parts of the system disagree on the scope of what was checked. This was the single most common shape
+of the last year's exploits, and it is invisible to both access-control review and signature review.
 - **Predicate ≠ invariant.** For each guard the exits rely on, write the invariant it is *meant* to
   enforce in one line, then read what it *literally* tests. A validator that counts signature *slots*
   rather than valid signatures; a ledger that tracks a bond *count* where identity was required; a
@@ -459,35 +437,32 @@ Run this once over the whole system:
 - **Shared dependency.** One framework, library, oracle-wrapper, or fork-template reused across many
   protocols means a bug in it is a bug in all of them. Pin its exact version, pull its advisory list,
   confirm each fix is present in **this** running artifact. A published, unapplied advisory in a shared
-  dependency is among the highest-probability findings in any system.
+  dependency is the single highest-probability finding in any system.
 - **Fork drift.** A fork inherits its parent's bugs and rarely its parent's fixes — and sometimes
   *removes* a check the parent had. Diff against the **original upstream**, not just the fork's own repo;
   a deleted guard is the finding.
 *Count: deployments of this system; shared dependencies; per one, fix-presence verified in the artifact.*
 
-### Three techniques the lenses don't otherwise force (not a separate taxonomy — apply while running them)
-These are not new questions; they're three moves the lenses above assume but don't make you perform:
-- **Compare siblings.** Where the system implements the same operation twice — mint vs burn, deposit vs
-  withdraw, open vs close, `_v92` vs `_v96` — read them against *each other*, not against your
-  expectation. A fix or a guard that landed in one branch and not the other makes the codebase its own
-  specification: the bug is the sibling missing the guard.
-- **Read the constants as secrets.** From your constant extraction, is any value a private key, a hash
-  preimage, or an address the code trusts as a signer? A hardcoded secret is public to whoever reads the
-  deployment, and the function it gates rejects every unprivileged caller in simulation while standing
-  open to anyone who read that constant.
-- **Count approvals as value at risk.** Value at risk includes everything the system has been *approved*
-  to move, not only what it holds — so a zero-balance contract with live allowances, or a still-live
-  prior version holding authority, is a target. This is the upward-graph obligation, made concrete.
+### The seven questions, folded in (ask of the whole system, not as a separate pass)
+1. What makes a number go up, at the edges (Lens F). 2. Whether a credit matches what arrived (Lens B).
+3. Where the same thing is done twice — mint vs burn, deposit vs withdraw, open vs close, `_v92` vs
+`_v96` — compared against each other; the bug is the sibling missing the guard. 4. What happens when
+something fails halfway (Lens D). 5. Whether a guard's secret is actually secret — read the constants
+you extracted; is any a key, preimage, or trusted signer? 6. What the signature/proof actually covers
+(Lens B). 7. Who else still has power here (Lens C-authority / the upward graph — roles still held,
+standing approvals, exemptions, trusted peers, a prior version still holding balances, an initializer
+left open; value at risk includes everything the system has been *approved* to move, so a zero-balance
+contract with live allowances is a target).
 
 **Token, chain, and language semantics** are seams too, run per value path and per deployment:
 fee-on-transfer, rebasing, transfer hooks handing execution to the counterparty mid-transfer,
 double-entry-point tokens, blocklists, non-standard decimals disagreeing across a math path, tokens
-returning false instead of reverting, `permit` that silently no-ops; and a **deflationary / burn /
-reflection token whose real balance moves while an AMM's cached reserve does not**, so a later
-`sync`/`skim` prices off a reserve that no longer matches the balance. Per chain: whether
-`block.number`/time mean what the code assumes, sequencer/finality/reorg behavior, mempool visibility,
-gas-token and precompile differences. Per language: the arithmetic defaults (where overflow aborts vs
-wraps vs truncates). The substrate modules carry the specifics.
+returning false instead of reverting, `permit` that silently no-ops; and — the single most common
+low-cap drain — a **deflationary / burn / reflection token whose real balance moves while an AMM's
+cached reserve does not**, so a later `sync`/`skim` prices off a reserve that no longer matches the
+balance. Per chain: whether `block.number`/time mean what the code assumes, sequencer/finality/reorg
+behavior, mempool visibility, gas-token and precompile differences. Per language: the arithmetic
+defaults (where overflow aborts vs wraps vs truncates). The substrate modules carry the specifics.
 
 ---
 
@@ -502,31 +477,16 @@ redeploy with mocks tests a system you invented.
 points that survived triage, with the adversary's real capabilities: flash-loanable capital, many
 addresses, atomic multi-step transactions, deployed helper contracts, hostile-but-standards-compliant
 tokens, extreme inputs, and — the point most often missed — **the ability to warp time and advance
-height/slot.**
-
-But warp with a distinction, because it decides whether a finding is real. **Mechanical time** — a
-vesting cliff, an epoch boundary, a rate accrual, a message that only needs to sit — has no defender:
-nothing on mainnet stops the clock, so warping past it is legitimate and a finding blocked only by it is
-not unproven, it is *unwarped* — warp it and prove it. A **reaction window** — a governance timelock, an
-emergency-pause delay whose *purpose* is to give a human or guardian time to veto — is a real guard, and
-warping silently past it assumes the defender does nothing, which overstates exploitability. Do not
-delete the defender's turn by default. Instead price the reaction (Lens C / §4 timelock): is anyone
-watching, do they have the power to stop it, have they ever? If the reaction is real and reliable, the
-timelock holds and the path is contingent. If the only thing between the attacker and the funds is a
-veto nobody performs, report it as a finding **contingent on the reaction not occurring**, and say so —
-that is honest in both directions, and thin-governance captures have repeatedly turned on exactly that
-veto never happening.
-
-One more honesty caveat: the **fork freezes market state while your warp advances only the clock.** An
-attack whose profit depends on prices or balances moving over the warped interval will read as more (or
-less) profitable than mainnet — model that movement explicitly rather than letting a frozen pool stand
-in for a week of trading.
+height/slot.** A six-day governance delay and a 24-day seeded message are both provable on a fork in
+seconds by jumping the clock. **A finding blocked only by elapsed time is not unproven; it is unwarped.
+Warp it and prove it.**
 
 Execution does three things reading cannot: it turns "I couldn't construct the trigger" into a concrete
 sequence or an honest dead end; it finds the rounding / splitting / precision / truncation cases you
 cannot reliably compute by hand (fuzz the core value math at its edges — `assertGe(after, before)` and
-per-operation monotonicity properties catch what a hand trace misses); and it finds violations nobody
-theorized — the only technique that yields a bug you didn't think to look for.
+per-operation monotonicity properties catch what a hand trace misses, and this is precisely the class
+behind the largest recent losses); and it finds violations nobody theorized — the only technique that
+yields a bug you didn't think to look for.
 
 **Build the PoC and do the arithmetic.** Every finding gets an executable exploit against the fork: the
 call sequence, state before and after, and the attacker's **net position after all real costs** — gas
@@ -581,14 +541,9 @@ that would settle it. A clean verdict without this is unfinished. It is much har
   have been closed — a fund-moving function with a missing or defeatable guard, a privilege acquirable
   cheaply, a forgeable or replayable authorization, a secret readable in deployed code. Qualifies
   regardless of the amount your PoC moved, but the exposed value must be large and real.
-- **Value moved from users to a beneficiary, even where the attacker's *direct* gain is small** — a
-  mispriced liquidation that eats reserves while the attacker is the liquidator, an unbacked mint that
-  dilutes every holder while the attacker holds the new units. The test is that *someone comes out ahead
-  at users' expense*; size it by funds at risk, not by the minimal PoC withdrawal. This is distinct from
-  pure destruction with **no beneficiary** — bricking a contract, freezing funds nobody can then take,
-  halting the chain — which is griefing/DoS and is **out of scope** below (the team's lane), except as a
-  *lever inside a theft chain* (a freeze that forces a mispriced settlement someone profits from). If no
-  one profits and nothing is stolen, it is not a finding for this audit; note it in one line for the team.
+- **Protocol insolvency / value destruction** counts even where the attacker's own gain is small, when
+  the bug lets user funds be lost or the system rendered unbacked (a mispriced liquidation that eats
+  reserves, an unbacked mint that dilutes every holder). Size it by funds at risk, not attacker profit.
 
 ### The reachability gate — three conditions, judged against the deployment as it stands now
 Governs what you **report**, never what you **investigate**. Apply it at write-up. Much of what clears
@@ -615,18 +570,14 @@ it looks privileged, dead, or irrelevant until understood.
 Anything failing a condition gets one line and no severity — except a dormant path, analyzed in full in
 its register. **Out of scope:** front-running, sandwiching, generalized MEV against honest users;
 anything depending on another user happening to trade mid-exploit; a privileged party misusing
-non-acquirable power; and **pure liveness/griefing with no beneficiary** — a chain halt, a bricked
-contract, funds frozen where no one can then take them. These are real problems and belong in your note
-to the team, but they are not theft and this audit is theft-shaped; the exception is when the halt or
-freeze is a *step* in a chain that ends with someone taking value (then report the whole chain). Read
-the ordering exclusion narrowly — excluded is an attack whose *substance* is ordering; **if the
+non-acquirable power. Read this narrowly — excluded is an attack whose *substance* is ordering; **if the
 same defect would still be a defect in a private mempool, it is in scope.**
 
 **Scope of the methodology itself.** This finds on-chain logic bugs — the exit whose authorization,
 amount, or check was wrong. It does **not** find, and cannot find, what by dollars is most of the theft
 in this ecosystem: private-key and signer compromise, phishing and social engineering, malicious
 insiders, and infrastructure (RPC, DNS, CI, frontend, hardware-wallet) compromise. Several of the
-largest losses in this space have left through those doors while every contract behaved exactly as
+largest losses of the last year left through those doors while every contract behaved exactly as
 written. A clean verdict here means the *code* has no open exit — it says nothing about the keys, the
 operators, or the pipeline, and your write-up must say so rather than let "audited, clean" be read as
 "safe."
@@ -728,22 +679,9 @@ project record, treating the pool as the named target inside a larger system. A 
 target: say so and ask which protocol. If the link doesn't resolve cleanly — dead slug, no adapter, no
 addresses — report that; don't find something plausible and audit that instead.
 
-**Other inputs resolve differently, and each pins its own state before Phase 2:**
-- **A bare address** — establish what it is (proxy? token? core?), pin the chain and block, read its
-  live holdings and authority, then let the trust graph (Q1/Q2 dependencies, the upward graph) grow the
-  system outward from it exactly as it would from an adapter's seeds. One node is never the target.
-- **A chain + height + binary version** (an app-chain / L1) — there is no explorer address to derive
-  from; the "deployment" is that binary at that height. Pin the height, take the dependency versions
-  (SDK, VM, crypto libraries) from the build, enumerate the module accounts and their live balances as
-  the exit-and-value set, and read live params via the chain's own query endpoints, not the repo.
-- **Two bridge endpoints** — the system is the *pair plus the link between them*. Pin a block on *each*
-  chain, derive each side by its own substrate's rules, and treat the master conservation invariant
-  (issued on one side ≤ locked on the other, reconciled live at both pinned points) as the first thing
-  you establish, before any per-side reading.
-
 Before beginning, inspect the execution environment for available blockchain tooling, RPC endpoints,
-and API credentials (providers, explorer/source-verification APIs, chain-specific endpoints). Use the
-tools you find fit for; install what's absent.
+and API credentials (RPC endpoints, providers, explorer/source-verification APIs, chain-specific
+endpoints). Use the tools you find fit for; install what's absent.
 
 ---
 
