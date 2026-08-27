@@ -8,11 +8,15 @@ verdict with a Null Report.
 ## What's here
 
 ```
-CORE.md                     the audit method — substrate-free, seam-centric. Read first.
+CORE.md                     the audit method. Read first. Spine: exits -> the numbers they trust -> the
+                            four ways a number is wrong (stale / forged / miscomputed / unbounded).
+CORE.v1.md                  the previous seam-first version, kept for diffing.
 modules/
-  EVM.md                    plug-in mechanics: proxies, factories, guard pricing, storage, callbacks
-  COSMOS_APPCHAIN.md        SDK keepers/handlers, the message atomic unit, the EVM-precompile seam
-  SOLANA.md                 the four account-validation checks that are ~every Solana bug
+  EVM.md                    proxies, factories, guard pricing, storage, callbacks, unchecked/rounding,
+                            deferred settlement, proof verifiers
+  COSMOS_APPCHAIN.md        SDK keepers/handlers, the message atomic unit, the EVM-precompile seam, Dec rounding
+  SOLANA.md                 the four account-validation checks that are ~every Solana bug, proof/sysvar seams
+  MOVE_SUI.md               abort-on-overflow vs silent shift/cast truncation, the capability/object model
   BRIDGE.md                 the three questions of every bridge; "audit the side you can't read"
 eval/                       test whether the prompt could have caught history — scoring the PATH, not the answer
   README.md                 the contamination problem and the three rules that beat it
@@ -32,10 +36,16 @@ ANALYSIS.md                 WHY the rewrite is shaped this way — reviewer-only
 3. It works the nine registers in `CORE.md §2` on disk, runs the five passes and six lenses, prices
    every guard, executes against a fork, argues the other side, and writes `findings.md`.
 
-## The five ideas that changed vs. the old prompt
+## The ideas that changed vs. the old prompt
 
-1. **Seams, not contracts.** The unit of work is the boundary where one component trusts another's
-   fact. Six of eight studied exploits lived at a seam and none inside a single function. (`CORE.md §1`)
+0. **One spine.** Money leaves through an exit that trusts a wrong number; a number goes wrong by being
+   stale, forged, miscomputed, or unbounded. Enumerate exits, trace every trusted number to where it's
+   made, ask the four questions. Seams (stale/forged) and core arithmetic (miscomputed/unbounded) are
+   the two production sites. (`CORE.md §1`)
+1. **Core math is first-class.** The two biggest pure-code losses of the year were a wrong shift-threshold
+   and a floor-division. "The language aborts on overflow" is not proof the math is safe — shifts and
+   casts truncate silently. Lens C hunts rounding direction, truncation at edges, splitting, and deferred
+   settlement, and §6 fuzzes/proves the math instead of eyeballing it. (`CORE.md §5 C`)
 2. **Price every guard.** "Guarded" is not "safe." Governance that costs $2k to seize, a timelock
    that reconfigures itself, a TWAP on the wrong path — all *existed*. Every guard carries a dollar
    defeat/acquire price read from live state; a guard priced below what it protects is a finding.

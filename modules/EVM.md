@@ -13,6 +13,30 @@ execution continue; low-level calls to an address with no code return `success=t
 sub-call's revert is only fatal if the caller bubbles it. Enumerate every low-level call site and
 every try/catch; for each, what state was written before it and does the code proceed on failure.
 
+## Arithmetic semantics (Lens C)
+Solidity `>=0.8` reverts on overflow/underflow for checked ops — but **`unchecked { }` blocks opt out**,
+and **casts / narrowing conversions truncate silently** (`uint256`->`uint128`, `int`->`uint`), as do
+explicit shifts. `<0.8` and inline assembly wrap by default. Find every `unchecked` block, every cast on
+a value path, and every assembly arithmetic op; these are where a checked-by-default reviewer stops
+looking. Division is floor; **round direction is a first-class question** — for every `mulDiv`/`/`/
+fixed-point op on an exit path, state whether it rounds toward the protocol or the caller and who keeps
+the remainder. A single floor-division dropping a rate adjustment, repeated across dozens of micro-swaps
+in one transaction, was a nine-figure loss.
+
+## Deferred / transient settlement (Lens C)
+Systems that permit a transient invariant violation as long as the transaction "nets out" — Uniswap V4
+`unlock`/flash-accounting, Balancer vault internal balances and `batchSwap`, EIP-1153 transient storage,
+any flash-loan-and-settle-at-end pattern — let an attacker act on state *while the books are transiently
+unbalanced*. Identify every such mechanism; ask what an outsider can do inside the unsettled window
+(price off a pool mid-batch, mint/redeem against a transiently-wrong balance) before the net-settle.
+
+## Proof / verifier seams (Lens B)
+Where a contract verifies a Merkle proof, a ZK proof, or an external attestation: confirm every public
+input the contract acts on is *constrained by* the proof (an unconstrained public input under a valid
+proof is attacker-controlled); confirm the verifying key / merkle root / trusted signer is the expected
+one and not settable to an attacker's; confirm a valid proof over attacker-chosen inputs is still
+rejected. A verifier misconfiguration authorizes withdrawals against a perfectly valid proof.
+
 ## Deriving contracts from the target
 - Runtime code + verified source: the chain's own explorer verification for that exact address, full
   source tree, not the flattened single-file view. Unverified → decompile (heimdall, Dedaub,

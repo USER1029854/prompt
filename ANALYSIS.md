@@ -244,3 +244,85 @@ target is an app-chain, that means a height and a binary version, not a contract
 You were auditing components and asking whether guards exist. The money leaves at the joints
 between components, through guards that exist and are cheap. Point the same rigour at the joints,
 and put a price on every guard.
+
+---
+
+# v2 — going to the ground
+
+The user asked to rewrite from the ground up and remove anything that *suppresses detection* unless it
+earns its place, and to widen the calibration set from the last ~6 months of on-chain logic exploits
+(excluding key/credential compromise and social engineering, which are out of an on-chain audit's
+scope — and which, notably, accounted for ~70% of 2026 losses; we are correctly *not* chasing them).
+
+## Calibration set, widened
+
+Added, all in-scope on-chain logic bugs, checked against SlowMist / DefiLlama / vendor postmortems:
+
+| Incident | Where the defect lived | Structural shape (in v2 terms) |
+|---|---|---|
+| Concentrated-liquidity DEX, ~$223M (Move/Sui) | A shared liquidity-math helper | **Miscomputed number.** A bounds check used the wrong threshold for a 64-bit left-shift; the language aborts on overflow but shifts truncate *silently*. Mint huge liquidity for one token. |
+| AMM vault, ~$128M (EVM) | `_upscaleArray` rounding | **Miscomputed + splitting + deferred settlement.** Floor division dropped a rate; 65+ micro-swaps in a constructor compounded it; batch internal balances let the books sit transiently unbalanced. |
+| Lending market collateral (EVM) | Liquidation pricing | **Miscomputed/stale.** Liquidated at a price thousands× too low; reserves ate the shortfall (insolvency, small attacker gain). |
+| Money market, cap bypass (EVM) | Supply-cap guard | **Unbounded / guard defeated.** Flash-acquired token to ignore caps and over-borrow. |
+| ZK-gated withdrawals | Verifier config | **Forged.** Valid proof, unconstrained/misconfigured verifier → unauthorized withdrawals. |
+| Perp settlement (Move/Sui) | Fee accounting | **Miscomputed.** Fee-accounting logic in settlement flows. |
+
+Two lessons reshaped the core rather than just extending a list:
+
+1. **The two largest pure-code losses of the year were boring core-math bugs** — a wrong shift-threshold
+   and a floor-division. v1 filed precision/rounding under a sub-bullet of the composition lens. That is
+   backwards: it is a *first-class production site of wrong numbers* and now has its own lens (C) and its
+   own execution mandate (fuzz/prove the core math at edges, don't eyeball it). The single sharpest
+   behavioral instruction added: **"the language aborts on overflow" is not proof the math is safe** —
+   shifts and casts truncate silently, and the guard is the hand-rolled bound whose *threshold* is the
+   bug, evaluated at its boundary.
+
+2. **The unified spine.** Studying the wider set, every incident collapses to one sentence: *money
+   leaves through an exit that trusts a wrong number, and a number goes wrong by being stale, forged,
+   miscomputed, or unbounded.* v1 led with "seams," which captures stale/forged but reads past
+   miscomputed/unbounded (the Cetus/Balancer family). v2 leads with **exits → the numbers they trust →
+   the four ways a number is wrong**, with seams and arithmetic as the two production sites. This is a
+   better net because it is exit-anchored: you start from the small closed set where money actually
+   leaves and pull every trusted number backwards, so a miscomputed-but-not-cross-component bug (Cetus)
+   can't hide from a seam-only search.
+
+## Detection-suppressors removed or loosened
+
+The user's core instruction: strip anything that stops detection. The honest ones in v1 (inherited from
+the original prompt):
+
+- **The `UNPROVEN` cap ("at most two total").** *Removed.* It was a reporting quota that, under
+  pressure, pushed out exactly the hard-to-PoC *compositional* findings — the seven-figure ones. Its
+  anti-confabulation purpose is served better by the kill-quota and evidence rules, which constrain
+  *quality* without capping *quantity*. v2: report every substantiable path with an honest proof-state,
+  ranked by severity, no numeric cap, and never demote a compositional finding to an open question to
+  tidy the report.
+- **The reachability gate's "live" clause as a dormant dumping ground.** *Sharpened.* v1 sent
+  "reachable only after a flag flips" to the dormant register. But if the *attacker* can cause the
+  precondition — acquirable governance, a permissionless call, a degenerate state already on-chain — it
+  is live, not dormant. v2 says so explicitly, so a real, attacker-triggerable path can't be filed away
+  as contingent.
+- **Severity/scope anchored to attacker gain only.** *Widened.* v2 adds insolvency/value-destruction as
+  a qualifying category (a mispriced liquidation that eats reserves while the attacker nets little is
+  still critical), so a Moonwell-shape bug isn't discarded for failing the economic net-positive test.
+
+Kept deliberately, because they defend against *false* positives (which the FP-controls in `eval/`
+measure, and which are a detection failure in their own right): the evidence discipline, `UNVERIFIED` on
+unenumerated sets, deployment-over-repo, byte-absence-is-not-evidence, the manifest. Removing these
+wouldn't find more real bugs; it would drown the real ones in noise.
+
+## Structural
+
+- New spine: **exits × numbers × {stale, forged, miscomputed, unbounded}** (`CORE.md §1`).
+- New first-class lens **C — miscomputation** (rounding direction, silent truncation, overflow/threshold
+  at edges, splitting, deferred/transient settlement).
+- New module **MOVE_SUI.md** (the largest in-scope venue of the period; Move's abort-on-overflow /
+  silent-shift-truncation split is exactly the kind of per-language semantics an EVM-trained auditor
+  misses).
+- Modules gained per-language **arithmetic-semantics** sections, **deferred-settlement** (EVM), and
+  **proof/verifier** seams (EVM, Solana, Bridge).
+- `eval/` gained a precision/rounding case and a ZK-verifier case; the grader's matcher was rewritten
+  (it had been doing character- not word-containment) and re-validated on positive, retrieval-only, and
+  empty transcripts.
+
+v1 is preserved as `CORE.v1.md` for diffing.

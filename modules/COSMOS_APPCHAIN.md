@@ -21,6 +21,15 @@ manages the `sdk.Context`, cached contexts, and `CacheContext()`/`Write()` commi
 State the atomic unit explicitly for every value-mutating handler: transaction, message, or a
 manually cache-wrapped sub-scope — and find the code written as if it were one when it is another.
 
+## Arithmetic semantics (Lens C)
+Cosmos SDK value math uses `math.Int` (arbitrary precision, panics on overflow of bounded conversions
+like `.Int64()`/`.BigInt()` truncation) and `math.LegacyDec`/`sdk.Dec` (fixed 18-decimal). `Dec`
+operations round — `.TruncateInt()` floors, `.RoundInt()` rounds half-up, `.Quo` vs `.QuoTruncate` vs
+`.QuoRoundUp` differ — and **choosing the wrong rounding direction on a payout vs a charge favors the
+caller**. Find every `Dec` division and truncation on a value path; state its direction and beneficiary.
+Watch `Int`↔`Dec` conversions and `.Int64()`/`uint64` downcasts that truncate silently, and any place a
+panic mid-handler is recovered (a recovered panic that leaves partial state is a Lens D failure site).
+
 ## Cosmos EVM / precompile seam (Substrate ↔ substrate, Lens D)
 When an SDK chain embeds the EVM, precompiles bridge EVM execution into native modules (bank, staking,
 distribution, ICS20/IBC transfer). The recurring critical: **state written inside a nested EVM call

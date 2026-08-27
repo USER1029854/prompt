@@ -34,6 +34,12 @@ Every bridge credits value on B because it believes something happened on A. Thr
 - **Amount binding.** Is the credited amount derived from the *verified* portion of the message, or
   from an attacker-supplied field (`hookData`, a memo, an unsigned tail) trusted alongside the proof?
 
+- **Proof-system verifier (ZK / light client / MMR).** If verification is a proof rather than a
+  signature set: is every public input the destination acts on *constrained by* the proof (an
+  unconstrained recipient/amount/nonce under a valid proof is attacker-controlled)? Is the verifying key
+  / trusted root the expected one and not attacker-settable? Is a valid proof over attacker-chosen inputs
+  still rejected? A verifier misconfiguration credits value against a perfectly valid proof.
+
 ### 2. Can the message be replayed, reordered, or collided? (Name ↔ name, Authority ↔ action)
 - **Replay.** Is there a consumed-nonce / used-hash set, and is it keyed correctly (per source chain,
   per destination, per message) and actually checked *before* the credit? Can the same proof be

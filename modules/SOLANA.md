@@ -69,6 +69,15 @@ are your Lens C/E findings before you've thought about economics at all.
   re-initializing (a "reinit" attack where a closed account is re-passed and re-used), and the
   `close` pattern that doesn't zero data or reassign owner.
 
+## Proof / verifier seams (Lens B)
+Where a program verifies a Merkle proof, a ZK proof, or a signed message (ed25519/secp via the
+instructions sysvar or a precompile): confirm the message/inputs the program acts on are covered by what
+was verified, the verifying key/root is the expected account (identity seam — not an attacker-passed
+account), and a valid proof over attacker-chosen public inputs is rejected. Signature verification via
+the instructions sysvar is a classic seam — confirm the program checks the sysvar instruction is the
+expected ed25519-program instruction over the expected message, not merely that *some* signature
+instruction exists.
+
 ## The unread Solana surface (attention inversion)
 - Native (non-Anchor) programs, where the four checks are hand-rolled and easy to omit — Anchor gives
   owner/signer/discriminator checks by default, native code doesn't.

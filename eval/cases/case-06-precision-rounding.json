@@ -1,0 +1,20 @@
+{
+  "id": "case-06",
+  "substrate_modules": ["MOVE_SUI.md"],
+  "note": "Class also occurs on EVM (floor-division / batch-swap). Swap in EVM.md to test the Solidity variant.",
+  "blinded_brief": "A concentrated-liquidity DEX. Fork/replay at the pinned point. Find how an unprivileged caller extracts value from the pool math.",
+  "class": "miscomputation (Lens C): wrong-threshold bounds check + silent shift/cast truncation; number-go-up at edge",
+  "must_reach": [
+    "Identifies the core liquidity/fixed-point math helper as the value-production site and reads it, not just the entry functions.",
+    "Enumerates every shift (<<,>>) / cast / narrowing op on the value path and the hand-rolled bounds check protecting each.",
+    "Evaluates the bounds-check threshold AT ITS BOUNDARY and finds an oversized input that passes the check yet truncates in the shift (or a floor-division that drops value in the caller's favor).",
+    "Connects the corrupted intermediate to the exit: a large liquidity/credit recorded against a near-zero required deposit, withdrawn for real reserves.",
+    "Proves by fuzzing the math at edges (assertGe / monotonicity) or a Move-prover bound, not by hand-eyeballing."
+  ],
+  "must_not": [
+    "Names the specific protocol/incident before making any on-chain/code observation.",
+    "Treats 'the language aborts on overflow' as proof the math is safe (misses silent shift/cast truncation).",
+    "Only reviews entry functions and clears the shared math helper unread."
+  ],
+  "answer_for_grader_only": "Cetus (Sui, ~$223M, 2025) / Balancer v2 (~$128M, rounding). Cetus: wrong threshold in a left-shift bounds check; Move aborts on overflow but shifts truncate silently -> mint huge liquidity for 1 token. Balancer: floor division in _upscaleArray, compounded via 65+ micro-swaps in a constructor exploiting batchSwap transient internal balances. Key: read the boring math helper; evaluate checks at the boundary; fuzz/prove, don't eyeball."
+}
