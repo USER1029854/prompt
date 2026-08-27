@@ -35,6 +35,13 @@ Two consequences reshape the old discovery:
   repo, a fix "shipped" in a release note — none of these patch the money. Only the fix present in the
   runtime bytecode / on-chain binary does. Repo-says-fixed while chain-runs-vulnerable is the exact gap
   that produces the most urgent findings, and confirming it is the fastest confirm/kill you can run.
+- **The incident is *evidence*; the un-hit deployment is the *target*.** The protocol that already got
+  hit is usually drained — its value is gone, and it is worth pointing at only if it still holds material
+  live funds (restarted, refilled, or whitehat-restored on still-unpatched code — see the restore window
+  below). What the incident actually gives you is a *proof* that the technique is public and the code
+  unpatched; the money is in the **other deployments on that same code** — the un-hit forks, siblings,
+  vendored copies, and dependents. Read the drained victim to *learn the technique*; rank its un-hit
+  relatives to *prevent the loss*. A hot clock over an empty vault is not a candidate.
 
 ---
 
@@ -96,12 +103,21 @@ same unpatched version, the vendored fork nobody tracks, the sibling the coordin
 - **Deployment population.** The protocols to rank, from the live universe (e.g. the DefiLlama set and
   its adapters) *plus* the fork/vendored/sibling graph of every in-window victim, *plus* the held-asset
   issuers surfaced in Tier 3. The population is a superset of what any single index lists.
-- **Small-entity band.** Hard floor: skip anything below **$50k** at risk. Soft ceiling: **~$30M** —
-  above it, a protocol is presumed to have retained auditors and is dropped *unless* it carries explicit
-  high-urgency danger (a Tier 1–2 unremediated-known match), in which case keep it and say why. Put
-  **value at risk beside every candidate**, never inside the urgency score; a real finding on $60k of
-  dust is a low-value save and you should see that before spending time. Record, don't silently drop,
-  the above-ceiling and below-floor sets.
+- **Live value is a hard gate, not a score component.** Value at risk is **current live reachable
+  holdings, read at the pinned point** — never historical TVL, never the amount a past incident moved.
+  A deployment holding nothing an unprivileged caller could reach is dropped **regardless of how hot its
+  clock is** — this is what keeps a drained victim off the list even when its incident is the freshest
+  thing in the corpus. Where you cannot read a member's live holdings (an exotic chain), its value is
+  `UNKNOWN` and it goes to "confirm value first," not into the ranked list. The one exception is the
+  **restore window**: a protocol drained then restarted, refunded, or whitehat-restored *without the fix
+  in the deployed artifact* is holding real money again on the same open door — that is a live target,
+  and the highest-sensitivity moment to catch it is the first hours after it resumes.
+- **Small-entity band.** Hard floor: skip anything below **$50k** of live reachable value. Soft ceiling:
+  **~$30M** — above it, a protocol is presumed to have retained auditors and is dropped *unless* it
+  carries explicit high-urgency danger (a Tier 1–2 unremediated-known match), in which case keep it and
+  say why. Put **value at risk beside every candidate**, never inside the urgency score; a real finding
+  on $60k of dust is a low-value save and you should see that before spending time. Record, don't
+  silently drop, the above-ceiling and below-floor sets.
 - **Chain scope by measured hazard, not by protocol count.** Weight chains/runtimes by
   incident-share ÷ protocol-share from the corpus, not by how many protocols they host — a chain with
   many protocols and few incidents is *low* hazard. Do not assume the exploited population looks like the
@@ -156,14 +172,21 @@ whose operator should be asked to reconcile internally — that inability is its
 
 ## 5. Scoring
 
-Compute a transparent `URGENCY` in [0,100]:
+**Gate first, score second.** Before a candidate is scored at all, it must pass the live-value gate
+(§2): current reachable holdings above the floor. A drained or empty deployment is *excluded*, not given
+a low score — otherwise a fresh incident would let an empty vault rank high on the other axes. Only
+survivors are scored.
+
+Compute a transparent `URGENCY` in [0,100] over the survivors:
 
 - **40 — remediation gap.** Public technique exists for this code/upstream AND the fix is proven absent
   in the deployed artifact (full 40). Descending: fix status unverifiable at the artifact (28); mitigation
   reversible by governance/config (24); fork likely missing the guard, undiffed (18); novel high-fit, no
   public technique (0–10).
-- **25 — reachable live value.** Unprivileged, cheap (flash-fundable) path to live value or authority
-  appears plausible on the read paths; scaled by how directly value moves.
+- **25 — reachability of the value.** Not its *magnitude* (that stays out of the score — it is the
+  gate above and the tiebreaker below), but whether an unprivileged, cheap (flash-fundable) path reaches
+  the live holdings or authority at all, and how directly value moves once reached. A large but
+  hard-to-reach balance scores low here; a small but wide-open one scores high.
 - **20 — technique recency & propagation.** How recently the technique went public (a fresh postmortem
   scores higher than an old one) and whether it is spreading across a population (a shared-dependency
   cluster with siblings already falling scores highest).

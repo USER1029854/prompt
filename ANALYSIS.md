@@ -567,3 +567,21 @@ indicator is written. Kept general — no incident named as a target; it re-deri
 the current corpus is. It preserves the discipline the discovery work had earned (evidence levels, read-
 only, no "vulnerable" language, ledger/no-repetition, the small-entity band, value-at-risk beside the
 score) and hands off to CORE.md.
+
+## v4.3 — DISCOVERY.md: don't point at drained victims
+
+A sharp question surfaced a real hole in DISCOVERY.md: urgency-first ranking risks pointing at the
+*victim* of a fresh incident, which is usually already drained. Fix, three small edits, philosophy
+unchanged (incident-derived-urgency-above-novel is correct for "prevent the next loss fastest"):
+- **§0** now states the reframe: the incident is *evidence* (the technique is public and the code
+  unpatched); the *target* is the un-hit deployment on the same code — the fork, sibling, vendored copy,
+  dependent. Read the drained victim to learn the technique; rank its un-hit relatives to prevent the
+  loss. "A hot clock over an empty vault is not a candidate."
+- **§2** promotes live reachable value from a score component to a **hard gate**, pinned to current
+  holdings read at the pinned point (never historical TVL) — so a drained victim is excluded regardless
+  of how fresh its incident is. Exception: the **restore window** (restarted/refunded/whitehat-restored
+  on still-unpatched code is holding real money again on the same open door).
+- **§5** gates before it scores, and the value axis was corrected to reward *reachability*, not
+  *magnitude* — putting dollar size back into the score would have re-introduced the exposure-weighting
+  the operator explicitly rejected. Magnitude stays the gate (empty→out, band) and the tiebreaker
+  (prefer fuller among equals), never the score.
