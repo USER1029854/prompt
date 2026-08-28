@@ -22,7 +22,10 @@ mkdir -p "$WORK"
 
 # already something on :8545? refuse rather than fork on top of a stale chain
 if cast block-number --rpc-url "$LOCAL" >/dev/null 2>&1; then
-  echo "NOTE: something is already serving $LOCAL. Stop it first (a stale anvil forks the wrong state)."; exit 1
+  echo "NOTE: something is already serving $LOCAL (probably an anvil from an earlier case)."
+  echo "      A stale chain would fork the WRONG state, so stop it first, then re-run this command:"
+  echo "        pkill anvil        # or Ctrl-C in the terminal running it, or: kill \$(lsof -ti:8545)"
+  exit 1
 fi
 
 echo "forking $RPC at block $FORK_AT (exploit block $BLOCK minus 1) ..."
