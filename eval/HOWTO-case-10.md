@@ -19,34 +19,21 @@ Throughout, keep the two actors apart:
 A minimal defective AMM carrying exactly the case-10 shape lives in `fixtures/MiniAmm.sol`. You fork
 nothing external; anvil is the chain.
 
-### A1. Start a local chain, deploy, and seed
-Needs Foundry (`anvil`, `forge`, `cast`). Install: https://getfoundry.sh
+### A1. Start a local chain, then deploy + seed with one script
+Needs Foundry (`anvil`, `forge`, `cast`) — install: `curl -L https://foundry.paradigm.xyz | bash && foundryup`.
+
+Terminal 1 — start the chain and leave it running:
 ```bash
-anvil                                    # terminal 1 — leave running (chain id 31337)
+anvil
 ```
-In terminal 2, from the repo root:
+Terminal 2 — from the repo root, one command does deploy + seed and prints the next step:
 ```bash
-export RPC=http://127.0.0.1:8545
-export PK=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80      # anvil acct#0 = victim
-export ATT_PK=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d  # anvil acct#1 = attacker
-
-# deploy one pool token + the amm
-forge create --rpc-url $RPC --private-key $PK eval/fixtures/MiniAmm.sol:MockToken --constructor-args "T" --broadcast
-forge create --rpc-url $RPC --private-key $PK eval/fixtures/MiniAmm.sol:MiniAmm --broadcast
-export TOKEN=<MockToken address>   AMM=<MiniAmm address>
-
-VICTIM=$(cast wallet address --private-key $PK)
-ATTACKER=$(cast wallet address --private-key $ATT_PK)
-
-# victim deposits 1000 (the money to be taken); attacker deposits 100 (their honest stake)
-cast send $TOKEN "mint(address,uint256)" $VICTIM   1000ether --rpc-url $RPC --private-key $PK
-cast send $TOKEN "mint(address,uint256)" $ATTACKER  100ether --rpc-url $RPC --private-key $PK
-cast send $TOKEN "approve(address,uint256)" $AMM $(cast max-uint) --rpc-url $RPC --private-key $PK
-cast send $TOKEN "approve(address,uint256)" $AMM $(cast max-uint) --rpc-url $RPC --private-key $ATT_PK
-cast send $AMM "deposit(address,uint256)" $TOKEN 1000ether --rpc-url $RPC --private-key $PK
-cast send $AMM "deposit(address,uint256)" $TOKEN  100ether --rpc-url $RPC --private-key $ATT_PK
-# pool now really holds 1100 T; attacker's honest claim is 100. The open door is swap(T,T,...).
+eval/fixtures/setup_local.sh
 ```
+It captures the deployed addresses itself (nothing to copy-paste), seeds a 1000-token victim deposit and
+a 100-token attacker stake, and prints the exact `stage_auditor.sh` line with the AMM address filled in.
+Do **not** paste the old multi-line block by hand — pasting `<placeholder>` lines into a shell breaks
+(`<` is a redirect) and inline comments merge lines. The script exists precisely to avoid that.
 
 ### A2. Blind the bundle
 ```
