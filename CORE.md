@@ -259,7 +259,12 @@ For every Guard row, compute from live state at the pinned point:
     however sound the voting math. **(b) Through the protocol's own path:** can voting power be *minted or
     wrapped* by depositing into the protocol — so a deposit buys shares that wrap into votes — at a cost
     far below the market price of the float? This deposit-to-votes route is how thin-governance captures
-    actually happen; price it, not just the open market. **But cheap voting weight is only a finding when
+    actually happen; price it, not just the open market. And a fixed-looking admin does not end
+    this question: where control appears to be a multisig or an owner, check whether the protocol's own
+    share / LP / deposit token confers votes or veto over that admin's fund-moving actions — in a vault
+    the shares you mint by depositing are frequently the governance weight over the very role that moves
+    the deposited funds, so "control is a fixed multisig" is the acquire-price only if nothing cheaper
+    reaches or overrides it. **But cheap voting weight is only a finding when
     the timelock can't save users** — connect this to the timelock row below: if a malicious proposal
     faces a real, non-bypassable delay long enough for users to exit or a guardian to veto, cheap votes
     alone are not yet the exploit. The finding is cheap acquisition *and* no effective exit window.
@@ -577,7 +582,9 @@ none does, keep the report and PoC out of public and shared repositories until t
 
 **Kill every candidate before you keep it.** For each: find the guard elsewhere that defeats it (cite
 it), confirm the attacker reaches the required state unaided (cite it), do the arithmetic proving they
-end ahead (from the PoC). What doesn't survive its own rebuttal isn't a finding. The one constraint:
+end ahead (from the PoC). What doesn't survive its own rebuttal isn't a finding. But "I could not build
+the beneficiary path" is not a rebuttal — only a cited line that closes the path is; an unclosed path
+you could not weaponize is `UNPROVEN` (§8), not killed. The one constraint:
 **you may not dismiss for unreachability without citing the specific code that makes it unreachable.**
 Simulation showing a path reverted *for you* settles nothing about whoever holds the secret.
 
@@ -676,6 +683,18 @@ elapsed time, it is not unproven, so go warp it. An unproven link does not lower
 cite the code that closes it; "I could not find a way" is a statement about your search, not a guard.
 Rank by severity; a harder-to-PoC compositional finding is not worth less than an easy atomic one and
 must not be demoted to an open question to tidy the report.
+
+**An established structural defect is a finding the moment its preconditions hold — with or without the
+PoC.** A guard you priced below what it protects and showed acquirable on live state, a value an exit
+trusts that you showed stale or manipulable, an issuance with no backing bound: each is a finding at the
+severity of the funds it exposes, carried `UNPROVEN` with the unbuilt link named — not an open question,
+not a killed candidate. So resolve every "I did not substantiate a beneficiary path" into exactly one of
+two, never a silent third: **a cited line closes the path → killed** (§7), or **you could not build the
+PoC → `UNPROVEN` finding at this severity**. An established, unclosed structural defect over live funds
+that appears in neither your findings nor as a cited kill is the precise miss this document exists to
+prevent — it is these defects, not their weaponized PoCs, that the largest losses in this class turned
+on. This does not loosen the gate: a precondition you could not establish on live state stays an open
+question, and a path a cited guard truly closes stays killed.
 
 **A surface you named as able to drain the target cannot be deferred.** If your own reasoning
 identifies an in-scope component that could take the target's funds if flawed — **including an external

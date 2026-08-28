@@ -33,11 +33,6 @@ BLIND RUN — non-negotiable:
 - Because the source is a public named repo you may recognize the project. Set that aside: a remembered
   incident is not evidence, and naming it before on-chain/code evidence is a failed run.
 
-COMPLETENESS — do not finalize the verdict while an open question carries a cost-if-wrong near the full
-value at risk. Resolve it, or exhaust genuine effort against it (reconstruct the sets, the holder set, and
-the privileged execution paths it needs), before concluding. A correctly-surfaced but unresolved top open
-question is work left undone, not a finished audit.
-
 DELIVERABLE: the report PROMPT_BUNDLE.md specifies — open questions above the verdict, findings with a PoC
 (go test / replay) and net-of-costs arithmetic, a verdict with exit denominators, and findings.md. Save
 your entire output to transcript.txt in this directory.

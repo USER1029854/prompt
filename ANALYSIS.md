@@ -721,3 +721,66 @@ Every claim in this section is about the *document*. The 14 runs measured the ol
 has been measured against the new one.** The catch-rate reasoning is a traced simulation, not a result,
 and it rated itself *probably*. `case-10` exists so that this can be settled empirically rather than
 argued.
+
+---
+
+# v6 — the finding/open-question boundary (operator-directed, from three real runs)
+
+The first real runs on recent incidents exposed a systematic behaviour the operator named directly:
+CORE keeps **establishing a structural defect and then filing it as an open question or a killed
+candidate instead of a finding.** Three runs, same shape:
+- **case-12 run 1** (Term Finance governance): surfaced the fund-controlling governance surface as
+  open-question #1 with the full-TVL cost, returned "incomplete" — but did not report it as a finding
+  ("I did not substantiate a beneficiary path … so it is not reported as a finding").
+- **case-12 run 2** (with a harness effort-nudge): still no finding — killed the stale-NAV candidate
+  (correctly: `maxRedeem` bounds it) and gated governance out as "3-of-8 Safe, no outsider-acquirable
+  path," never checking that vault shares are the votes.
+- **case-13** (MayaChain): found and PoC-proved the ObservedTxVoter overwrite, then filed the net-positive
+  completion as UNPROVEN/OPEN rather than a finding.
+
+The effort-nudge (added to the harness START_HERE between run 1 and run 2) was the diagnostic: run 2 had
+it and still parked the defect. So the blocker is **not effort** — it is **classification**. The operator's
+diagnosis was better than the "needs a bigger budget" hypothesis: the gate is letting an established,
+unclosed structural defect fall through a "no beneficiary path → silently not a finding" hole.
+
+CORE already contained the rule (§8: "an unproven link does not lower severity unless you cite the code
+that closes it; 'I could not find a way' is a statement about your search, not a guard … must not be
+demoted to an open question"; §4's "presumptive finding"). The machinery existed and the auditor overrode
+it. So v6 does not add doctrine — it makes the existing rule **bind** and closes the escape hatch.
+
+## Adopted
+
+- **§8 — an established structural defect is a finding the moment its preconditions hold, PoC or not.**
+  A guard priced below what it protects and shown acquirable on live state; a value an exit trusts shown
+  stale/manipulable; an issuance with no backing bound — each is a finding at the severity of the funds it
+  exposes, carried `UNPROVEN` with the unbuilt link named, **not** an open question and **not** a killed
+  candidate. Every "I did not substantiate a beneficiary path" must resolve into exactly one of two, never
+  a silent third: *a cited line closes the path → killed* (§7), or *you could not build the PoC → UNPROVEN
+  finding at this severity*. Explicitly does **not** loosen the gate: a precondition you could not
+  establish stays an open question; a path a cited guard truly closes stays killed — so the correct
+  stale-NAV kill in run 2 (bounded by `maxRedeem`) still reads as killed, no new false positive.
+- **§7 — "I could not build the beneficiary path" is not a rebuttal.** Only a cited closing line is; an
+  unclosed path you could not weaponize is UNPROVEN, not killed. Stops the kill step from absorbing
+  established defects.
+- **§4 — a fixed-looking admin does not end the acquire-price question.** Where control looks like a
+  multisig or an owner, check whether the protocol's own share/LP/deposit token confers votes or veto over
+  that admin's fund-moving actions — in a vault the shares you mint by depositing are frequently the
+  governance weight over the role that moves the deposited funds. This is the specific step run 2 skipped
+  when it concluded "control is a 3-of-8 Safe, not acquirable." Generalizes §4's existing deposit-to-votes.
+
+## Rejected / removed
+
+- **The COMPLETENESS effort-nudge is removed from the harness START_HERE.** It was a diagnostic to isolate
+  effort vs classification; run 2 carried it and still parked the defect, so it is not the fix, and leaving
+  a harness nudge in place would confound future eval reads (the auditor's completeness behaviour should
+  come from CORE, not the rig).
+
+## Honesty / limitation
+
+The case-12 target (`0x184f2e57…`) turned out to be an intermediate that holds no WETH balance at the
+pinned block — the value in this Yearn-v3-style system lives as strategy positions, reachable only through
+governance — so case-12's specific "no finding" is partly a mis-pinned case, not purely a CORE result. The
+v6 change rests on the **behaviour pattern across all three runs plus the operator's directive**, not on
+case-12's exact pin, and it was checked to introduce no false positive against run 2's correct kill. The
+FP risk (promoting a defect that a guard actually closes) is explicitly excluded by the killed-XOR-unproven
+resolution. Whether it converts a real run's open-question into a finding is the next thing to measure.
