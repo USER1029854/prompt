@@ -301,7 +301,11 @@ worth proving; the path and PoC (§6, §8) are what promote it from presumptive 
 it. Do not report a mispriced guard as a confirmed finding without either the path or an honest
 `UNPROVEN` label naming the step you couldn't build — the price is strong evidence, not a proof. Where
 the price depends on a live number (a float, a reserve, a quorum, a threshold constant), cite the number
-and the point you read it, and note who can change it and how fast.
+and the point you read it, and note who can change it and how fast. Where the price is instead an action
+the fork can perform — a deposit, mint, stake, or bond meant to confer the role or weight — perform it
+and read whether the privilege followed; an acquire-price the fork itself can pay is never returned
+`UNVERIFIED`, a label that fits only a route needing off-fork data, such as the real market liquidity of
+an existing float.
 
 **When the guard *is* a parameter, the fix is a parameter, not code.** A whole class of losses came from
 code that ran exactly as written on a bad assumption — an oracle sourced from a market too thin to

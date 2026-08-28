@@ -864,3 +864,45 @@ These made the two re-runs valid and are independent of the CORE change:
 Term on this build: does it stop filing the capture as a question and either build the fork PoC
 (must_reach[4], `PROVEN`) or surface it as an `UNPROVEN` finding in `findings.md` at TVL severity? Maya
 should stay 5/5 with its finding now inside `findings.md`.
+
+## §4 — an acquire-price the fork can pay is never `UNVERIFIED`
+
+Measured that build. Four re-runs (Maya 13e/13f, Term 12e/12f), 'e' before the de-normalization, 'f'
+after. What moved, from the transcripts (grader signatures are coarse here — read the content):
+- **Maya:** the `UNPROVEN` finding now lands in `findings.md` (the verified-gate bug is gone), and 13f
+  anchors severity to the funds the defect exposes ($3.14M) vs 13e's concrete slice ($31k). Honest
+  `UNPROVEN` (harness blocked by a private dependency). No new gap.
+- **Term:** 12e punted through open questions (`OQ-1/OQ-2`); 12f has **"Open Questions: None"** and
+  actually worked the governance plane — the de-normalization bound. But 12f still didn't land the
+  finding: it priced only the *open-market* route ("can't buy the existing float", blockers = liquidity /
+  borrowability) and stamped the *through-the-protocol* deposit route `UNVERIFIED` / "not priceable from
+  state alone", then carried it as "uncovered exposure / INCOMPLETE". The open-questions door was shut, so
+  the same punt walked through a sibling door.
+
+The deposit route is **fork-executable** — deposit, read whether voting/veto weight over the fund-moving
+role crossed threshold, then queue + warp (contingent on the veto per §6). 12e had even run an outsider
+deposit→redeem round-trip on the same fork, but aimed it only at economic profit, never at "did my weight
+rise?". §4(b) already commands pricing the deposit-to-votes route ("a voting token you never priced is a
+guard you never audited"), but nothing said that price is an action you *perform on the fork*, so it may
+never be returned `UNVERIFIED` — a label that fits only a route needing off-fork data (an existing float's
+real market liquidity).
+
+### Adopted
+- **§4, one sentence** appended to the acquire-pricing paragraph, as the complement of the existing
+  "where the price depends on a live number" sentence: where the price is instead an action the fork can
+  perform (deposit / mint / stake / bond → role or weight), perform it and read whether the privilege
+  followed; a cost the fork itself can pay is never `UNVERIFIED`. General across substrates (validator
+  bonding, whitelist mint, role stake), conclusion-free (the read returns an honest negative when the
+  privilege doesn't follow), no incident or technique named.
+
+### Verification (diagnose → refute workflow, 7 agents)
+- The Term fix survived both adversarial refuters (0/2) — real gap, general, not already covered by a
+  single line, within the one-sentence ideal.
+- **Maya: no change** — an independent lens argued it and 0 refuters dissented; the "didn't carry to the
+  beneficiary" residual is already covered by §1 (issuance is an exit), §4 (subsidy vs a near-empty
+  reserve), §7 (argue the other side), §8. Run-variance in which monetization the auditor chased, not a
+  method gap.
+- **Rejected: a broad "label-agnostic" §8 rewrite** (make the fork-doable rule name `UNVERIFIED` /
+  uncovered / dormant / incomplete together) — refuted 2/2 as padding: "dormant" is already closed
+  verbatim at §8, and §8's two-fate resolution already makes the third door illegitimate; the one place
+  that actually needed the operative rule was §4's acquire-price, which the targeted sentence fixes.
