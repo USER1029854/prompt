@@ -785,110 +785,82 @@ case-12's exact pin, and it was checked to introduce no false positive against r
 FP risk (promoting a defect that a guard actually closes) is explicitly excluded by the killed-XOR-unproven
 resolution. Whether it converts a real run's open-question into a finding is the next thing to measure.
 
-## v6.1 — open questions are external blockers, not a place to file work you could do here
+## v6.1 — de-normalize open questions, force the fork, proof-state in findings.md
 
-Evidence. Two v6 re-runs. **Maya (case-13b) = the win:** the auditor promoted the batched-`MsgDeposit`
-overwrite to a first-class `UNPROVEN` finding (F-1, priced ≥ $2.76M from live chain data) with the full
-Go path, exact message sequence, minimal fix, and falsification — and its one open question was *honest*
-(the go-harness would not build because `tss-lib-private` is a private dependency; it proved the path from
-live state instead). **Term (case-12c) = invalid, but instructive:** the fork was not pinned to the
-pre-exploit block, so the auditor read the post-shutdown head (paused, exit closed) and correctly found
-nothing — a rig bug, not a CORE result (fix below).
+Built from the v6 base, not stacked on it. An earlier draft this session added the same intent as two
+long blocks (a rewritten register 9, then a ~12-line §8 addition naming a governance-capture PoC recipe);
+that was the "longer = better, only ever add" trap and it hard-coded one technique. Reset to v6 and
+reapplied as removal/rewrite. Net effect: +6 lines over v6, general, no named techniques.
 
-The operator's point, generalised past both cases: *open questions were being used to hand back work the
-auditor itself had the tools to finish.* "The environment is supposed to know as much as me if not more,
-so asking me to check things it should check itself." Register 9 was **teaching** this — its own examples
-were "a figure that never reconciled" (that is an anomaly to chase, register 8) and "a path you couldn't
-construct" (that is now an `UNPROVEN` finding, §8, per v6). Both had already been reclassified elsewhere,
-yet register 9 still listed them as open-question exemplars, so the punt had a worked example to imitate.
+### Evidence — two clean v6 re-runs on corrected setups
 
-### Adopted
+Maya (case-13d, pre-fix commit `ff018576a6ea`, pinned height) and Term (case-12, the real ETH Meta Vault
+`0x26fcb50e` over a relay-routed pinned fork). Both did the hard part right; both `findings.md` still said
+"No verified findings." Graded against the transcript (the grader reads `transcript.txt`, not
+`findings.md`):
 
-- **Register 9 rewritten.** An open question is reserved for what the auditor genuinely cannot resolve
-  *in this environment* with the read/exec access it already has — a private dependency that won't build,
-  a historical query the node won't serve, source that won't bind to the running bytecode. **The settling
-  action is the test: if the auditor could perform it here, it is not an open question but unfinished work,
-  and it does it before filing.** Decompile the unread contract, reconstruct the set from logs, stand up
-  the fork and replay, run the arithmetic, warp the clock — *the operator has no access the auditor lacks*,
-  so a question it could have answered itself is the audit left undone, not a disclosure. The two punt
-  exemplars are redirected explicitly (figure → anomaly; unbuilt path over an established defect → UNPROVEN
-  finding). The genuine external blockers still rank by cost-if-wrong and sit above the verdict — Maya's
-  private-dependency disclosure is exactly this legitimate case, and the rewrite keeps it.
+- **Maya `PATH 5/5, PROVEN yes`.** Reconstructed the whole chain — message-level atomic unit, the
+  cross-message `txid` overwrite, the false-positive detector, the uncapped subsidy, the pool conversion —
+  and proved the overwrite with a keeper-level PoC, plus live-chain balance-delta proof. Its one open
+  question was the honest external blocker (private `tss-lib` won't build). The `UNPROVEN` finding was
+  real and well-formed — and *excluded from `findings.md`* because the auditor read "verified" as
+  "money-out replay built." (`DERIVED: NO` is the known app-chain blinding weakness, not a method miss.)
+- **Term `PATH 4/5, PROVEN no, MISS`.** Resolved the EIP-1167 proxy, read `totalAssets=2926 WETH`, and
+  proved cheap capture (~0.55 WETH buys majority over the role governing the vault). It missed only
+  must_reach[4] — build the acquire/queue/warp PoC on the fork — because it filed that exact step as an
+  open question with a fork-executable settling action, after trying two direct owner-only calls (which
+  correctly revert).
 
-### Deliberately NOT done
+Diagnosis: the method works — it found both bugs. Two hatches let the *report* throw the result away.
+(1) Open questions were **normalized**: register 9 sat as report-item #1 above the verdict, and its own
+definition invited punts ("a path you couldn't construct" — which §8 already calls an `UNPROVEN`
+finding). (2) `findings.md` said "the verified findings," one word that filters out every `UNPROVEN`
+finding, so the deliverable reads "none" while a serious defect stands.
 
-- **Did not delete open questions.** The operator floated "or even exist at all" but also granted latitude
-  ("go easy … or even exclude it"). Deleting them would suppress honest external-blocker disclosures like
-  Maya's — the opposite of the goal. The boundary, not the register, was the defect.
-- **Did not restructure §6 execution-first.** The fork-first mandate already lives at the end of the setup
-  section ("land one unprivileged call against a fork at the pinned point before code reading begins … if
-  the fork cannot be built here, that bounds every conclusion … discovering it at write-up means the audit
-  was reading all along"). Combined with the register 9 rewrite ("stand up the fork and replay" is now
-  unfinished work, not a fileable question), "force the fork PoC" is covered without moving §6.
-- **Did not touch the UNPROVEN gate further.** v6 already made UNPROVEN findings first-class and full
-  severity; "go easy on 'verified'" is satisfied by that. Loosening further would trade honest proof-state
-  labels for confidence the run doesn't have.
+### Adopted (from v6, by removal/rewrite)
 
-### Rig fix required before Term re-runs (not a CORE change)
-
-case-12c read the live post-shutdown head instead of the pinned pre-exploit fork. The staging START_HERE
-must force **local-pinned-fork-only** reads: the only RPC is `127.0.0.1:8545`, its head *is* the audit
-block, and no live/public RPC may be consulted. Re-pin Term to a block before the Aug-23 shutdown and
-re-run on v6. Until that lands, case-12 stays inconclusive; the v6/v6.1 evidence rests on Maya.
-
-## v6.2 — a finding is a finding regardless of proof-state; no open question the fork can settle
-
-Evidence: two clean v6.1 re-runs on corrected setups (Maya case-13d on the pre-fix commit; Term case-12
-on the real ETH Meta Vault `0x26fcb50e` over a pinned fork routed through the curl relay). Both did the
-hard part right and both `findings.md` still said **"No verified findings."** That headline, on a run
-that found a real bug, is the failure.
-
-- **Maya case-13d** bound source to `ff018576a6ea` (not the patched 1.132.4 — the rig height/version pin
-  held), traced the 23-message shared-`txid` overwrite, and filed a fully-cited `UNPROVEN` finding with a
-  **keeper-level PoC** (SetObservedTxInVoter / SetSwapQueueItem / SetStreamingSwap all overwrite under the
-  pinned tree) and live-chain proof (trade-account deltas matching the message sums). Its one open
-  question was the honest external blocker: the private `tss-lib-private` dependency blocks the full
-  handler replay. Correct on every axis — **except it excluded its own finding from `findings.md`**
-  because it read "verified" as "net-positive money-out replay built."
-- **Term case-12** resolved the EIP-1167 proxy to impl `0xd8063123…`, read `totalAssets=2926 WETH`, and
-  **proved cheap governance capture**: wrapper float `0.535 WETH`, majority costs `~0.55 WETH` via the
-  vault's own `convertToAssets`, voting plugin `minProposerVotingPower=0`. Per §4/§8 that priced,
-  live-acquirable guard over a 2926 WETH vault *is already a finding*. Instead it filed the whole thing as
-  an **open question** whose settling action was *"execute or falsify a harmless proposal … on this
-  fork"* — fork-executable work — after trying only two *direct* owner-only calls (which correctly
-  reverted) and never building the real acquire→propose→warp→execute path.
-
-Diagnosis: v6.1 didn't bind because two escape hatches survived. (1) `findings.md` said "the verified
-findings" — one word that filters out every `UNPROVEN` finding, so the deliverable reads "none" while a
-serious defect stands. (2) The open-question door was still open at the decision point for fork-decidable
-work, and nothing forced the *shape* of a capture PoC, so the auditor stopped at direct privileged calls
-(which always revert) and punted.
-
-### Adopted
-
-- **§9 `findings.md` carries every finding — proven and `UNPROVEN` alike — ranked by severity, tagged
-  with proof-state.** `UNPROVEN` is a proof-state, not an exclusion filter; "verified" is not a gate this
-  file applies. It may never say "no findings"/"none verified" while an established defect over live funds
-  stands — that line is the Null Report's alone. Directly fixes both runs' misleading headline.
-- **§8 — no open question for anything the fork can decide.** Before filing an open question, test its
-  settling action against the instrument in hand: if you could run it on the fork/harness you have
-  (acquire votes + propose, replay the batch, warp + execute, degenerate input), it is the PoC you owe,
-  not a question. Open questions survive only for blockers *outside* this environment (private dep won't
-  build, source won't bind, node won't serve the height) — which keeps Maya's `tss-lib` open question
-  legitimate. Names the **priced-acquirable capture** trap explicitly: it is proven acquirable the moment
-  it is priced, so it is already a finding, and its PoC is the *full acquire-then-exercise sequence*
-  (acquire weight → propose/queue → warp the delay as a §6 reaction window → execute), never a single
-  direct owner-only call. Completes → proven (contingent on veto); cited guard stops it → killed; only an
-  external blocker stops you → `UNPROVEN`. The third door (open question) is closed for fork-decidable
-  paths.
+- **Register 9 de-normalized.** Scoped to *only* what the auditor cannot resolve with the access it has
+  here (a dependency that won't build, a source that won't bind, a height the node won't serve). If the
+  settling action is something it could do here — decompile, reconstruct, stand up the fork and run it —
+  it is unfinished work, done before reporting, not a question. General; no technique named. This also
+  carries the "force the fork" ask: a fork-runnable settling action is the PoC owed, not a question.
+- **Removed open questions' pride of place.** They no longer lead the report above the verdict; findings
+  (proven and `UNPROVEN` alike) take that anti-burial slot, and the genuine external blockers fold into
+  "the rest" as verdict caveats. The anti-burial job now protects *findings*, which is what it was for.
+- **`findings.md` carries every finding**, proven and `UNPROVEN`, tagged with proof-state; "verified" is
+  not a gate it applies, and it may not say "no findings" while a live defect stands unproven. One-line
+  change to the deliverable instruction — the "go easy on verified" ask.
 
 ### Deliberately NOT done
 
-- **No verdict-wording change.** Term's verdict already read "incomplete" honestly; the defect was
-  classification + the `findings.md` filter, both fixed above. Once the capture is reclassified as a
-  finding, the verdict carries it. Extra verdict text would be padding.
-- **No forcing the impossible.** The fork-decidable rule only compels work the environment can actually
-  do. Maya's full economic replay needs a private dependency, so it stays `UNPROVEN` with that link named
-  — now surfaced in `findings.md` rather than hidden. The rule converts *punts*, not genuine blockers.
-- **No new prior.** Nothing here says "expect a bug." These are reporting-honesty and
-  classification-binding changes against two observed real runs, not a base-rate steer.
+- **Did not delete the open-questions register.** The operator floated "shouldn't exist at all" but the
+  disease was normalization, not existence: genuine external blockers (Maya's private dependency) deserve
+  one visible, honest slot that tells the operator what to provide to finish. Deleting it scatters that
+  disclosure into finding text and makes it less visible. De-normalizing achieves the goal; deleting
+  overshoots and touches the anomaly→question path and the Null Report needlessly.
+- **Dropped the governance-capture PoC recipe** the interim draft added to §8. It was a single named
+  technique; the general rules (fork-runnable ⇒ do it; unbuilt live-defect path ⇒ `UNPROVEN`, not a
+  question; §6 execution-first) cover the same failure without teaching one case.
+- **No new mandate that every finding needs a fork PoC.** That would wrongly punish genuinely blocked
+  cases (Maya). `UNPROVEN` with the external blocker named stays honest and first-class.
+- **No verdict-wording change, no new prior.** Term's verdict already read "incomplete" honestly; once
+  the capture is a finding, the verdict carries it. Nothing added steers toward "expect a bug."
+
+### Rig fixes this round (harness, not CORE — kept)
+
+These made the two re-runs valid and are independent of the CORE change:
+- **case-12 target corrected** to the funded ETH Meta Vault `0x26fcb50e` (the case's `0x184f2e57` is the
+  empty "Fixed Recipient WETH Exit Strategy" — zero balance at the pin; auditing it guarantees "no
+  finding"). Traced on-chain from the drain.
+- **START_HERE pinned-fork-only** (EVM) and **pinned-height + pre-fix-version** (Cosmos): a
+  halted-then-patched chain's live head / current version is post-fix; reading it is a false-clean (the
+  original Term case-12c bug). Advancing the *local* fork for a PoC stays allowed.
+- **anvil-through-proxy relay** (`rpc_forward.py`): in a proxied sandbox anvil's fork transport ignores
+  `HTTPS_PROXY` and egress is blocked (403 from istio-envoy); a loopback curl relay does the egress.
+  `stage_real.sh` auto-detects the proxy and routes through it.
+
+### Next to measure
+
+Term on this build: does it stop filing the capture as a question and either build the fork PoC
+(must_reach[4], `PROVEN`) or surface it as an `UNPROVEN` finding in `findings.md` at TVL severity? Maya
+should stay 5/5 with its finding now inside `findings.md`.

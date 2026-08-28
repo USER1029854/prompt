@@ -165,16 +165,13 @@ list.
    degenerate live state, a rounding direction that favors the caller. Each is chased to resolution or
    promoted to an open question with its cost-if-wrong. **Anomalies write your best theories.** An
    anomaly is not yet a finding and must not be filtered as one — chase it before you judge it.
-9. **Open questions** — reserved for what you genuinely cannot resolve *here*, with the read and exec
-   access you already have: a dependency whose source is private and won't build, a historical query the
-   node won't serve, source that won't bind to the running bytecode. The settling action is the test —
-   **if you could perform it in this environment, it is not an open question but unfinished work, and you
-   do it before you file.** Decompile the contract you left unread, reconstruct the set from logs, stand
-   up the fork and replay, run the arithmetic, warp the clock: the operator has no access you lack, so a
-   question you could have answered yourself is the audit left undone, not a disclosure. A figure that
-   never reconciled is an anomaly to chase (register 8); an unbuilt path over an established defect is an
-   `UNPROVEN` finding (§8), not a question. Only the true external blockers remain — ranked by
-   cost-if-wrong, each with the action that would settle it, **above the verdict**, never beneath it.
+9. **Open questions** — *only* what you cannot resolve with the access you already have here: a
+   dependency that won't build, a source that won't bind to the deployment, a height the node won't
+   serve. If the settling action is something you could do here — decompile it, reconstruct the set,
+   stand up the fork and run it — then it is not a question, it is unfinished work; do it before you
+   report. The operator has no access you lack, so a question you could have answered yourself is the
+   audit undone, not a disclosure. A figure that won't reconcile is an anomaly (8); a path you couldn't
+   build over a live defect is an `UNPROVEN` finding (§8) — neither is an open question.
 
 Also pin, once, in a file: **the block height / state version per chain** at which you read all live
 state, and **the exact version/commit/artifact of every dependency**. Every live number you cite is
@@ -703,23 +700,6 @@ prevent — it is these defects, not their weaponized PoCs, that the largest los
 on. This does not loosen the gate: a precondition you could not establish on live state stays an open
 question, and a path a cited guard truly closes stays killed.
 
-**No open question for anything the fork can decide.** Before you write any open question, test its
-settling action against the instrument in your hands: if you could run it on the fork or harness you
-already have — acquire the votes and submit the proposal, replay the batch, warp the delay and execute,
-call the function with the degenerate input — then it is not a question, it is the PoC you owe, and you
-build it before you write. The operator you hand the report to has no fork you lack; a settling action
-they could only perform by doing what you can do here is the audit undone, not a disclosure. An open
-question survives **only** for a blocker outside this environment: a private dependency that will not
-build, a source that will not bind, a historical query the node will not serve. A **priced-acquirable
-capture** is the trap that keeps landing here: a governance role, an admin, a voting float you showed
-cheap on live state is *proven acquirable the moment you priced it*, so it is already a finding — and its
-PoC is the **full acquire-then-exercise sequence** (acquire the weight → propose or queue the privileged
-action → warp past the delay, pricing it as a reaction window per §6 → execute), **never** a single
-direct call to an owner-only method, which reverts for everyone and proves nothing about the real path.
-Build that sequence on the fork. If it completes, the finding is proven (contingent on the veto per §6);
-if a cited guard stops it, it is killed; if only an external blocker stops you, it is `UNPROVEN` with
-that one link named. It does not fall back to an open question — that third door is closed.
-
 **A surface you named as able to drain the target cannot be deferred.** If your own reasoning
 identifies an in-scope component that could take the target's funds if flawed — **including an external
 protocol whose token/share/position the target holds as backing, reserve, or collateral, whose own
@@ -732,28 +712,24 @@ caveat is the true one.
 
 ## 9. Output, and checks run as each artifact is written
 
-**Report order:** (1) **Open questions** from register 9, ranked by cost-if-wrong, each with its
-settling action — above the verdict, always; a real bug filed beneath a clean verdict reads as a
-formality, and that placement is how it survives. (2) **Findings** — each: code cited precisely, the
-invariant it breaks, the exact call sequence, the numeric trace from the fork showing the attacker net
-ahead after all costs, the priced guard(s) it defeats and why they don't stop it, the minimal fix, and
-what evidence would falsify it. (3) **Verdict** — carrying its denominators: exits enumerated, and how
-many of them have all three questions answered with a citation each. Where those two numbers differ the
-verdict is **incomplete** and names what it did not reach; only a whole denominator earns **clean**,
-which then carries the mandatory Null Report (§7). (4)
+**Report order:** (1) **Findings** — above the verdict, always; an `UNPROVEN` finding is still a
+finding, and a real bug filed beneath a clean verdict reads as a formality — that placement is how it
+survives. Each: code cited precisely, the invariant it breaks, the exact call sequence, the numeric
+trace from the fork showing the attacker net ahead after all costs, the priced guard(s) it defeats and
+why they don't stop it, the minimal fix, and what evidence would falsify it. (2) **Verdict** — carrying
+its denominators: exits enumerated, and how many of them have all three questions answered with a
+citation each. Where those two numbers differ the verdict is **incomplete** and names what it did not
+reach; only a whole denominator earns **clean**, which then carries the mandatory Null Report (§7). (3)
 **The rest** — gate failures (one line each), the dormant-path register, the guard register with
-prices, pointers to artifacts, and everything you couldn't read or had to assume, including every
+prices, the open questions from register 9 (genuine external blockers, each with what would settle it),
+pointers to artifacts, and everything you couldn't read or had to assume, including every
 off-chain component the system's safety depends on, what decision it controls, and what breaks if it
 decided wrongly. **A clean on-chain result must never imply the whole system is sound.**
 
-Then write **`findings.md`** in the working directory: **every finding — PoC-proven and `UNPROVEN`
-alike — ranked by severity**, each tagged with its proof-state and the dollar amount at risk, computed
-from live balances you re-read at head. `UNPROVEN` is a proof-state, not an exclusion filter: an
-established defect over live funds belongs in `findings.md` at the severity of the funds it exposes even
-when you could not build the money-out replay. **Never write "no findings" or "none verified" here while
-such a defect stands** — that line is reserved for a true Null Report (§7), and "verified" is not a gate
-this file applies. A serious finding demoted out of the deliverable because its final link is unbuilt is
-the same miss as never finding it.
+Then write **`findings.md`** in the working directory: every finding — proven and `UNPROVEN` alike —
+tagged with its proof-state, each with the dollar amount at risk, computed from live balances you re-read
+at head. "Verified" is not a gate this file applies; never report "no findings" here while a live defect
+stands unproven.
 
 **Checks — run when each artifact is written, not retrospectively** (retrospective checking reviews your
 own verdict and validates it; run these while there's no conclusion to defend):
