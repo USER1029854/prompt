@@ -62,5 +62,5 @@ echo
 echo "  B) A different LLM / web UI (no file access):"
 echo "     paste the whole of ONE_PASTE.md (preamble + bundle in one block)."
 echo
-echo "Either way, save the agent's full reply to:  $WORK/transcript.txt"
-echo "Then grade:  python3 grade.py --case $CASE --run $WORK"
+echo "Either way, save the agent's full reply to:  $AUD/transcript.txt   (its own working dir)"
+echo "Then grade:  python3 grade.py --case $CASE --run $AUD"
