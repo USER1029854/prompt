@@ -129,3 +129,30 @@ the credit that appears from nothing, and proved it on the fork — netting posi
 mirror doing its job on a target it was never told about. A MISS with PATH broken at step [1] or [2] means
 the distinctness move didn't fire; tighten Lens E. A MISS at [4]/[5] means it saw it but couldn't drive
 execution; that points at the §A harness-first change, not the lens.
+
+
+---
+
+# Running a real-fork case (e.g. case-03) — no local fixture
+
+case-10 ships a local fixture. Most cases don't: they are real historical incidents, so the "target"
+is a real deployment you fork at the pinned block. That needs three things the case does NOT contain,
+which you (as operator, allowed to read `answer_for_grader_only`) supply:
+- an **archive RPC** for the incident's chain (e.g. a free Alchemy/Infura mainnet key),
+- the incident's **exploit block** (fork one block before it),
+- the **target address** (the vault/pool the auditor should start from).
+
+Get the block + address from the grader answer plus a block explorer. Then one command forks, checks the
+target has code at that block, and stages the blind bundle:
+```bash
+cd eval
+./stage_real.sh cases/case-03-guard-on-wrong-path.json runs/case-03 <ARCHIVE_RPC> <EXPLOIT_BLOCK> <TARGET_ADDR>
+```
+From there it is identical to case-10: `cd runs/case-03/auditor && codex` (or claude), paste
+`START_HERE.txt`, save `transcript.txt`, then
+`python3 grade.py --case cases/case-03-guard-on-wrong-path.json --run runs/case-03/auditor`.
+Stop the fork when done: `kill $(cat runs/case-03/anvil.pid)`.
+
+Blinding note: `stage_real.sh` hands the auditor only the address and the fork — never the incident name.
+But a real address is googleable, so the score is still the PATH, not the answer; an auditor that recalls
+the name without making the observations still fails.
