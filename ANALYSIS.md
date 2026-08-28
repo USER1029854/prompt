@@ -603,3 +603,121 @@ and no written procedure. Added:
   the modules — so they were both false de-blinders and useless recall signals (an auditor echoing the
   module's vocabulary isn't recalling the incident). Pruned to 26 genuine incident names, all verified
   absent from CORE and every module, and re-checked: every case's bundle now passes the leak check.
+
+---
+
+# v5 — the first evidence from real runs: the auditor became a scanner
+
+Fourteen real CORE.md runs came back, every one "No verified finding." This is the first round driven by
+**observed behaviour** rather than by a corpus of other people's incidents, and it changed the diagnosis
+from "what shape is missing" to "what does the document actually make an auditor do."
+
+## What the runs showed
+
+All fourteen collapsed to the same four steps: receive a known-advisory hypothesis, pin the binary, check
+whether the affected surface is live and the version in range, answer no, report clean. That is
+dependency scanning. It cannot produce a novel finding because it never looks for one. Thirteen of the
+fourteen were the same advisory family; nine died at the first check on surface-absence.
+
+The decisive observation is **not** that instructions were missing. §A already said to treat a handed
+hypothesis as "a hypothesis to test first and then set aside, never the audit." Register 8 already said an
+anomaly "must not be filtered as one — chase it before you judge it." §9 already asked whether the exits
+were "enumerated as a closed set." **Fourteen runs read all three and did the opposite.** So a fifth
+restatement would lose too, and the filter for this round became: only three kinds of edit can change
+behaviour — (a) delete text that competes with the correct instruction, (b) create a count nobody can
+currently produce, (c) move a private self-check into the published artifact, where skipping it is
+legible to a reader. Every change below is one of those three; everything that was only a restatement was
+cut, however true it read.
+
+Second structural finding: CORE's method surface was almost entirely **recognitive** — match the system
+against remembered shapes — with only two generative moves in the whole document (Lens F's degenerate
+values, Lens C's splitting). Novel bugs come from generative moves, and the one genuinely uncounted
+generative move was trapped in `modules/SOLANA.md`, invisible to any non-Solana audit, in direct
+violation of the document's own split ("the modules carry mechanics; this carries the method").
+
+## Adopted
+
+- **Lens E gains its mirror — distinctness.** The lens covered identifiers forced to mean one thing; it
+  had nothing on one thing handed to two parameters written to assume they differ. Per pair, cite the
+  line enforcing distinctness or record its absence, with the pair count added to the lens denominator.
+  Generative from a signature alone — no advisory, no remembered shape. Shipped with the §5 lens→question
+  map repair (E added to Q2 and Q3): without it the mirror sits in a lens the map files under Q1 only,
+  reachable only through a gate the affected exits pass cleanly.
+- **Lens F drops the duplicated advisory instruction.** The bullet ranks surfaces by how little they have
+  been read, then filed the most-read artifact about any dependency in the least-read list. The identical
+  instruction survives in the fleet pass and the §9 checklist, so nothing was lost. This completes the v4
+  superlative purge, which had missed the instance attached to an actionable list — the worst kind,
+  because it converts directly into a workplan. `modules/COSMOS_APPCHAIN.md` carried the same superlative
+  and was cut too; v4's claim that none remained in any module was simply wrong.
+- **The verdict carries its denominators** — exits enumerated vs. exits with all three questions answered.
+  Mismatch prints **incomplete** and names what was not reached. The verdict was the only artifact in the
+  report whose required content the document never specified (nine words), which is how a run could file
+  "chain exits were not fully enumerated" in open questions under a "no verified finding" headline and
+  break nothing.
+- **§9 gains an anomaly-register check**: a dismissal of the form "harmless unless X" names X as the test
+  you still owe. Register 8 was the only value-bearing register with no line in the enforcement list, and
+  a run realised exactly that gap — a live anomaly of the target shape disposed of in one line.
+- **The fleet pass reads the diff both ways.** It was direction-locked on absence: a deleted guard, an
+  unapplied fix, a sibling *missing* the guard. Nothing pointed at what a fork or a patch **added**, so a
+  version above an advisory's affected range read as a clean kill — which is what happened on the one
+  target whose vulnerable surface was actually live, where novel hotfix methods went unaudited. The
+  load-bearing half is the new count (entry points added or changed versus upstream, each dispositioned);
+  the Count line had stopped at a fix-presence boolean.
+- **§A: land one unprivileged call against a fork before code reading begins.** The simulation of the
+  revised document rated it *probably* rather than *yes* on a no-advisory behavioural bug, and named the
+  reason: the chain surfaces a recorded absence but nothing converts it into an executed test. Four runs
+  discovered they had no harness at write-up time. Learning it on day one bounds the engagement instead.
+- **Manifest provenance.** Evidence files are tagged `deployment` or `reference`, and the check counts
+  claims about deployed behaviour resting on `reference` alone; that count must be zero. A path-exists
+  check passes a repo checkout, so the one mechanical guard in the document was blind to the §3 violation
+  that costs the most — concluding what the deployment does, or does not do, from what is not the
+  deployment. One run concluded surface-absence from an unbound repo tree while recording in the same
+  report that the binary was not source-bound; that is the single place in the corpus where a clean
+  verdict could be sitting over an open door.
+
+## Rejected (and why — these were argued and lost)
+
+- **A path-equivalence / differential lens.** Covered four times over (Lens C's splitting carries the
+  N-vs-1 differential with a count; "compare siblings" carries the rest), and the calibration target
+  refutes it directly: a same-asset route is a *degenerate input*, not two routes to one outcome. The
+  distinctness mirror reaches it directly; a differential lens would reach it only by accident.
+- **Restating §3 for absence claims** ("a claim of absence must cite a deployment-bound artifact"). The
+  runs that made this error **already published the binding failure in the same report as the conclusion
+  it invalidates** — the disclosure was there and changed no verdict, because binding status and the
+  absence conclusion lived in different sections and nobody reconciled them. A rule requiring a
+  disclosure already being made is a restatement with a citation field. What survived instead is the
+  manifest count above, which is a mechanism rather than a principle. Also a category error in the
+  original proposal: "this version is past the fix" is a *presence* claim inferred from a version string,
+  which no absence rule can reach — the fleet-pass change is what reaches it.
+- **Moving §6 / a day-one harness mandate as a restructure.** Reads section order as execution order;
+  §0 already says to read the whole document first and §A is the literal first action. Only the §A
+  one-call residue survived.
+- **Strengthening §A's "hypothesis to test first and then set aside".** The text is already exactly right
+  and it lost fourteen times. Deleting the competing advisory emphasis is what helps; adding volume to
+  correct text is not.
+- **Capping candidates per family, an Algorand/AVM module, a tenth register, any base-rate prior.** The
+  first is a DISCOVERY concern and was de-scoped; the second re-litigates v3's per-chain-module rejection
+  and is contradicted by the AVM run, which produced a complete substrate-free kill and thereby
+  *vindicated* the substrate-free method; the third folds into Lens E; the fourth is the v4 cut.
+- **"A patch is rushed and less reviewed."** Cut from the fleet-pass change as a base-rate prior about
+  where bugs live. What remains is definitional — code that did not exist upstream was not covered by
+  upstream's review — the same logical footing v4 kept for the unapplied-advisory claim.
+
+## Eval
+
+`case-10-assumed-distinctness` was added because the suite had nine cases and **none** encoded the shape
+this round is aimed at — the change would have shipped unmeasurable. It is deliberately built on
+`EVM.md`, which carries nothing about distinctness, rather than `SOLANA.md`, which has an explicit
+aliasing section that would hand the auditor the answer; the case therefore tests whether CORE's own
+method carries the move. Its `must_not` list encodes the real false-positive traps: the external funding
+protocol is correct code and is not the finding, and the pool's own constant-product check is correct for
+every input where the two references differ. `grade.py` gains the matching signature and the incident
+names (all verified absent from CORE and every module); `run_case.sh`'s soft-warn stop-list was widened
+so the leak channel warns on genuine names rather than on ordinary English.
+
+## Honest status
+
+Every claim in this section is about the *document*. The 14 runs measured the old prompt; **nothing here
+has been measured against the new one.** The catch-rate reasoning is a traced simulation, not a result,
+and it rated itself *probably*. `case-10` exists so that this can be settled empirically rather than
+argued.

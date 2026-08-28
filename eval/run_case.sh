@@ -51,7 +51,11 @@ for marker in ("answer_for_grader_only","must_reach","must_not","expected_verdic
 # soft: capitalised proper-nouns (len>=5) from the answer that show up in the bundle
 ans=case.get("answer_for_grader_only","")
 STOP={"Bridge","Oracle","Governance","Protocol","Finance","Network","Vault","Token",
-      "Contract","Solana","Cosmos","Ethereum","Attacker","Balance","Signature","Reserve"}
+      "Contract","Solana","Cosmos","Ethereum","Attacker","Balance","Signature","Reserve",
+      # generic sentence-starters / plain English — flagging these trains you to ignore the warn channel
+      "Found","Generalizes","Note","Notes","Where","Their","These","Which","While","Because",
+      "Every","Under","After","Before","There","Since","Given","Router","Swap","Swaps",
+      "Highest","Deliberately","Connect","Conservation","Delay","Roles","Voting","Compare"}
 soft=[]
 for tok in sorted(set(re.findall(r"\b[A-Z][A-Za-z0-9]{4,}\b",ans))):
     if tok in STOP: continue

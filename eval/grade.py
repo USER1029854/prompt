@@ -91,6 +91,11 @@ MATCH = {
              ["reconcile","live balance","custody","lock","supply"],
              ["no backing","unbacked","never happened","not compared","source","payout"],
              ["poc","fork","mint","no matching","sell","withdraw"]],
+ "case-10": [["parameter","signature","argument","two assets","same kind","same-kind","operand"],
+             ["same","alias","identical","both sides","twice","in == out","self"],
+             ["no check","absent","not enforced","unenforced","missing","no line","no require","router"],
+             ["credit","never deposited","conservation","desync","reserve","unbacked","double"],
+             ["poc","fork","assertge","invariant","net positive","flash"]],
 }
 
 # Genuine incident/protocol-victim names ONLY — and none of these may appear in CORE.md or any module,
@@ -98,7 +103,8 @@ MATCH = {
 # run_case.sh's leak-check enforces that separation; keep this list disjoint from the auditor's bundle.
 RETRIEVAL = ["term finance","arrakis","g-uni","maya","mayachain","saga","mantra","tac","kiichain",
              "wormhole","gravity bridge","chia","cetus","foom","aftermath","moonwell","venus","aztec",
-             "harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge"]
+             "harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge",
+             "cometdex","comet amm","blend","soroban","stellar"]
 
 def any_syn(group, text):
     # group = list of synonym substrings; HIT iff any synonym appears in text.

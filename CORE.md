@@ -178,7 +178,12 @@ Write evidence to disk as you produce it — recovered source, decompilations, s
 simulations, harnesses, logs. Keep `manifest.json` mapping each tagged claim to the files that
 establish it, and `commands.sh` with every command in order, re-runnable. **A claim with no manifest
 entry does not appear in the report.** Before finalizing, run a script that checks every referenced
-path exists and is non-empty; paste its output.
+path exists and is non-empty; paste its output. **Tag each evidence file `deployment` (verified or
+decompiled runtime, or a live read at the pinned point) or `reference` (repo, docs, an advisory, a
+version string), and have the same script count the claims about deployed behaviour resting on
+`reference` alone — that count must be zero.** A path-exists check passes a repo checkout, so untagged
+it is blind to the §3 violation that costs the most: concluding what the deployment does — or does not
+do — from something that is not the deployment.
 
 ---
 
@@ -788,7 +793,11 @@ addresses — report that; don't find something plausible and audit that instead
 
 Before beginning, inspect the execution environment for available blockchain tooling, RPC endpoints,
 and API credentials (providers, explorer/source-verification APIs, chain-specific endpoints). Use the
-tools you find fit for; install what's absent.
+tools you find fit for; install what's absent — then **land one unprivileged call against a fork at the
+pinned point before code reading begins.** Everything in §6 assumes an instrument you can put questions
+to, and a question you can ask in one call is cheaper than the paragraph you would write guessing its
+answer. If the fork cannot be built here, that bounds every conclusion you will reach and belongs in the
+report; discovering it at write-up means the audit was reading all along.
 
 ---
 
