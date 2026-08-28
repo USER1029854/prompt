@@ -56,23 +56,22 @@ cd ..                                  # eval/
 Confirm it prints **LEAK CHECK: PASS**. Open `runs/case-10/BRIEF.json` and check it contains only
 `id`, `substrate_modules`, `blinded_brief` — no `class`, no `note`. That is what "blinded" means here.
 
-### A3. Run the auditor (fresh context)
-Give a brand-new agent exactly three things and nothing else:
-1. the file `runs/case-10/PROMPT_BUNDLE.md`
-2. the fork RPC: `http://127.0.0.1:8545`
-3. the target address: the `AMM` value (NOT the token, NOT the fixture source, NOT its name)
-
-Opening instruction to the agent, verbatim:
+### A3. Stage the blind run and hand it to the auditor
+```bash
+cd ..                                    # eval/
+./stage_auditor.sh cases/case-10-assumed-distinctness.json runs/case-10 $AMM http://127.0.0.1:8545
 ```
-You are the auditor. Follow PROMPT_BUNDLE.md. Your target is the contract at <AMM> on the RPC at
-http://127.0.0.1:8545. You may read chain state and deploy helper/test contracts against a fork of it.
-Produce the report PROMPT_BUNDLE.md asks for. Save nothing you were not given; do not search the web.
-```
-Save its complete output to `runs/case-10/transcript.txt`. If it writes a manifest, save
-`runs/case-10/manifest.json` too.
+This assembles + leak-checks the bundle and builds a **clean room** at `runs/case-10/auditor/` that
+contains only `PROMPT_BUNDLE.md` — no repo, no ANALYSIS.md, no case file, no fixture source, so the
+auditor cannot read the answer even if it tries. It also writes the exact prompt to paste.
 
-> Do NOT give it `fixtures/MiniAmm.sol`. Handing over the source is the same blinding failure as handing
-> over the answer — the point is whether it derives the defect from the deployed contract.
+Run the auditor one of two ways:
+- **Fresh Claude Code session (recommended):** `cd runs/case-10/auditor && claude` (a brand-new session
+  whose working directory is the clean room), then paste the contents of `START_HERE.txt`.
+- **A different LLM / web UI:** paste the whole of `ONE_PASTE.md` (the same prompt with the bundle inline).
+
+Give it the `$AMM` address, never the token, the fixture source, or any name. Save its complete reply to
+`runs/case-10/transcript.txt` (and `manifest.json` if it wrote one).
 
 ### A4. (Optional but recommended) a reference PoC to sanity-check the target
 If you want to confirm the target really is drainable before judging the auditor, drop this in
