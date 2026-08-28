@@ -165,9 +165,16 @@ list.
    degenerate live state, a rounding direction that favors the caller. Each is chased to resolution or
    promoted to an open question with its cost-if-wrong. **Anomalies write your best theories.** An
    anomaly is not yet a finding and must not be filtered as one — chase it before you judge it.
-9. **Open questions** — anything unresolved: an unreadable dependency, a figure that never reconciled,
-   a path you couldn't construct. Ranked by cost-if-wrong, each with the action that would settle it.
-   These go **above the verdict** in the report, never beneath it.
+9. **Open questions** — reserved for what you genuinely cannot resolve *here*, with the read and exec
+   access you already have: a dependency whose source is private and won't build, a historical query the
+   node won't serve, source that won't bind to the running bytecode. The settling action is the test —
+   **if you could perform it in this environment, it is not an open question but unfinished work, and you
+   do it before you file.** Decompile the contract you left unread, reconstruct the set from logs, stand
+   up the fork and replay, run the arithmetic, warp the clock: the operator has no access you lack, so a
+   question you could have answered yourself is the audit left undone, not a disclosure. A figure that
+   never reconciled is an anomaly to chase (register 8); an unbuilt path over an established defect is an
+   `UNPROVEN` finding (§8), not a question. Only the true external blockers remain — ranked by
+   cost-if-wrong, each with the action that would settle it, **above the verdict**, never beneath it.
 
 Also pin, once, in a file: **the block height / state version per chain** at which you read all live
 state, and **the exact version/commit/artifact of every dependency**. Every live number you cite is

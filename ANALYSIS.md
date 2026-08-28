@@ -784,3 +784,54 @@ v6 change rests on the **behaviour pattern across all three runs plus the operat
 case-12's exact pin, and it was checked to introduce no false positive against run 2's correct kill. The
 FP risk (promoting a defect that a guard actually closes) is explicitly excluded by the killed-XOR-unproven
 resolution. Whether it converts a real run's open-question into a finding is the next thing to measure.
+
+## v6.1 — open questions are external blockers, not a place to file work you could do here
+
+Evidence. Two v6 re-runs. **Maya (case-13b) = the win:** the auditor promoted the batched-`MsgDeposit`
+overwrite to a first-class `UNPROVEN` finding (F-1, priced ≥ $2.76M from live chain data) with the full
+Go path, exact message sequence, minimal fix, and falsification — and its one open question was *honest*
+(the go-harness would not build because `tss-lib-private` is a private dependency; it proved the path from
+live state instead). **Term (case-12c) = invalid, but instructive:** the fork was not pinned to the
+pre-exploit block, so the auditor read the post-shutdown head (paused, exit closed) and correctly found
+nothing — a rig bug, not a CORE result (fix below).
+
+The operator's point, generalised past both cases: *open questions were being used to hand back work the
+auditor itself had the tools to finish.* "The environment is supposed to know as much as me if not more,
+so asking me to check things it should check itself." Register 9 was **teaching** this — its own examples
+were "a figure that never reconciled" (that is an anomaly to chase, register 8) and "a path you couldn't
+construct" (that is now an `UNPROVEN` finding, §8, per v6). Both had already been reclassified elsewhere,
+yet register 9 still listed them as open-question exemplars, so the punt had a worked example to imitate.
+
+### Adopted
+
+- **Register 9 rewritten.** An open question is reserved for what the auditor genuinely cannot resolve
+  *in this environment* with the read/exec access it already has — a private dependency that won't build,
+  a historical query the node won't serve, source that won't bind to the running bytecode. **The settling
+  action is the test: if the auditor could perform it here, it is not an open question but unfinished work,
+  and it does it before filing.** Decompile the unread contract, reconstruct the set from logs, stand up
+  the fork and replay, run the arithmetic, warp the clock — *the operator has no access the auditor lacks*,
+  so a question it could have answered itself is the audit left undone, not a disclosure. The two punt
+  exemplars are redirected explicitly (figure → anomaly; unbuilt path over an established defect → UNPROVEN
+  finding). The genuine external blockers still rank by cost-if-wrong and sit above the verdict — Maya's
+  private-dependency disclosure is exactly this legitimate case, and the rewrite keeps it.
+
+### Deliberately NOT done
+
+- **Did not delete open questions.** The operator floated "or even exist at all" but also granted latitude
+  ("go easy … or even exclude it"). Deleting them would suppress honest external-blocker disclosures like
+  Maya's — the opposite of the goal. The boundary, not the register, was the defect.
+- **Did not restructure §6 execution-first.** The fork-first mandate already lives at the end of the setup
+  section ("land one unprivileged call against a fork at the pinned point before code reading begins … if
+  the fork cannot be built here, that bounds every conclusion … discovering it at write-up means the audit
+  was reading all along"). Combined with the register 9 rewrite ("stand up the fork and replay" is now
+  unfinished work, not a fileable question), "force the fork PoC" is covered without moving §6.
+- **Did not touch the UNPROVEN gate further.** v6 already made UNPROVEN findings first-class and full
+  severity; "go easy on 'verified'" is satisfied by that. Loosening further would trade honest proof-state
+  labels for confidence the run doesn't have.
+
+### Rig fix required before Term re-runs (not a CORE change)
+
+case-12c read the live post-shutdown head instead of the pinned pre-exploit fork. The staging START_HERE
+must force **local-pinned-fork-only** reads: the only RPC is `127.0.0.1:8545`, its head *is* the audit
+block, and no live/public RPC may be consulted. Re-pin Term to a block before the Aug-23 shutdown and
+re-run on v6. Until that lands, case-12 stays inconclusive; the v6/v6.1 evidence rests on Maya.
