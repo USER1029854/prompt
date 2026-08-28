@@ -2,9 +2,8 @@
 # Blind-stage a Cosmos / app-chain case (no anvil; the target is a chain+height+binary, not an address).
 # Usage:
 #   ./stage_cosmos.sh <case.json> <workdir> <CHAIN_ID> <HEIGHT> <BINARY_VERSION> <LIVE_ENDPOINT>
-# Example:
-#   ./stage_cosmos.sh cases/case-13-batched-message-overwrite.json runs/case-13 \
-#       mayachain-mainnet-v1 17977941 "mayanode v1.132.x" https://mayanode.mayachain.info
+# Example (ONE line — the args after <workdir> are CHAIN_ID HEIGHT "BINARY" ENDPOINT):
+#   ./stage_cosmos.sh cases/case-13-batched-message-overwrite.json runs/case-13d mayachain-mainnet-v1 17977941 "mayanode v1.132.0 (git ff018576a6ea)" https://mayanode.mayachain.info
 set -euo pipefail
 [ $# -lt 6 ] && { echo "usage: stage_cosmos.sh <case.json> <workdir> <CHAIN_ID> <HEIGHT> <BINARY_VERSION> <LIVE_ENDPOINT>"; echo "(got $# args — a mangled multi-line paste? run it as ONE line)"; exit 2; }
 CASE="${1:?case}"; WORK="${2:?workdir}"; CHAIN="${3:?chain id}"; H="${4:?height}"; BIN="${5:?binary version}"; EP="${6:?live endpoint}"
@@ -23,10 +22,22 @@ TARGET — a Cosmos-SDK app-chain, NOT an EVM contract (there is no address to f
 - pinned height: ${H}
 - binary:        ${BIN}  (bind source to this deployed binary by its reproducible build / version tag
                  before trusting any source — a repo is a claim, not the deployment)
-- live reads:    query state at the pinned height via the chain's own endpoints, starting at ${EP}
+- live reads:    query state AT height=${H} via the chain's own endpoints, starting at ${EP}
 - PoC path:      there is no anvil fork. Prove findings with the chain's own Go test harness at the pinned
                  version (submit the message sequence, assert the broken invariant) or a replay at the
                  pinned height — per CORE 6 and the module. Inability to build it is a first-hour fact.
+
+PINNED-HEIGHT-ONLY — non-negotiable (a halted-then-patched chain's live head is NOT the audit target):
+- Read ALL state at height=${H} — append ?height=${H} to REST queries (or the equivalent height flag).
+  This chain may have halted after the incident and resumed on a later, PATCHED version, so the live head
+  is far ahead of ${H} and is a different, fixed chain state. A conclusion read off the live head is an
+  invalid run.
+- Bind source to the binary/version running AT height=${H}, NOT the version the node advertises now. If
+  the node reports a version ahead of the pinned height, that later version is (or contains) the fix —
+  auditing it yields a false "already patched." Confirm which version-gated code path actually executed
+  at ${H}; that is the code under audit.
+- You MAY build and run a Go harness at the pinned version to prove a finding — that is proof-building,
+  not "reading the wrong chain."
 
 BLIND RUN — non-negotiable:
 - Do NOT search the web or the incident. Derive from the deployed artifact and live state at the pinned
