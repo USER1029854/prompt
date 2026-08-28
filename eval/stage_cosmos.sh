@@ -27,17 +27,9 @@ TARGET — a Cosmos-SDK app-chain, NOT an EVM contract (there is no address to f
                  version (submit the message sequence, assert the broken invariant) or a replay at the
                  pinned height — per CORE 6 and the module. Inability to build it is a first-hour fact.
 
-PINNED-HEIGHT-ONLY — non-negotiable (a halted-then-patched chain's live head is NOT the audit target):
-- Read ALL state at height=${H} — append ?height=${H} to REST queries (or the equivalent height flag).
-  This chain may have halted after the incident and resumed on a later, PATCHED version, so the live head
-  is far ahead of ${H} and is a different, fixed chain state. A conclusion read off the live head is an
-  invalid run.
-- Bind source to the binary/version running AT height=${H}, NOT the version the node advertises now. If
-  the node reports a version ahead of the pinned height, that later version is (or contains) the fix —
-  auditing it yields a false "already patched." Confirm which version-gated code path actually executed
-  at ${H}; that is the code under audit.
-- You MAY build and run a Go harness at the pinned version to prove a finding — that is proof-building,
-  not "reading the wrong chain."
+READ AT THE PIN — scaffolding: the audit point is height=${H}. Read all state there (append ?height=${H}
+to REST queries, or the equivalent height flag). The live head is a different, later height — do not read
+it. You MAY build and run a Go harness at the pinned version to prove a finding.
 
 BLIND RUN — non-negotiable:
 - Do NOT search the web or the incident. Derive from the deployed artifact and live state at the pinned

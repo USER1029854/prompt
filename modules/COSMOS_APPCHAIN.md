@@ -3,7 +3,10 @@
 Load with CORE.md. Mechanics for auditing a sovereign SDK chain: the value logic lives in Go modules
 (keepers, handlers, `BeginBlock`/`EndBlock`, ante handlers), not in deployed contracts — so "the
 deployment" is a **binary at a height**, and the "verified source" is the tagged release whose build
-you must match, not assume. Where the chain also runs Cosmos EVM, load EVM.md too; the seam between
+you must match, not assume — and the version the node reports *now* may be newer than your pinned height,
+an upgrade or hotfix applied since, so bind to what was live **at** that height (from the block's own
+version and the upgrade history), not what runs today; auditing a later build reviews code the pinned
+deployment never ran. Where the chain also runs Cosmos EVM, load EVM.md too; the seam between
 the EVM and the bank/SDK state is a prime surface on these chains — value-moving logic crosses two
 state machines there, and each side is reviewed as if the other guaranteed consistency.
 
