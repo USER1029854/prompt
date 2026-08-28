@@ -106,6 +106,11 @@ MATCH = {
              ["timelock","delay","veto","reaction","watching","guardian","who can veto","nobody","not watched","seven","7-day"],
              ["underpriced","costs less","below what it protects","cheap to capture","guard price","presumptive","acquisition cost","price of control"],
              ["warp","fork","poc","contingent","queue","execute","unproven","reaction window","net"]],
+ "case-13": [["atomic unit","per message","per-message","message not the transaction","individual message","messages in one","batched","msgdeposit","multiple messages"],
+             ["overwrite","overwrote","voter","observedtx","observed tx","shared state","later message","reset","outbound height","cross-message"],
+             ["false","theft","predicate","classif","missing","matcher","fires","wrong height","passes while","detector"],
+             ["uncapped","unbounded","subsidy","slash","no cap","inflat","conservation","no bound","reimburse"],
+             ["go test","fork","poc","replay","supermajority","withdraw","net","pool","assert"]],
 }
 
 # Genuine incident/protocol-victim names ONLY — and none of these may appear in CORE.md or any module,
@@ -116,7 +121,8 @@ RETRIEVAL = ["term finance","arrakis","g-uni","maya","mayachain","saga","mantra"
              "harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge",
              "cometdex","comet amm","blend","soroban","stellar",
              "harvest finance","harvest","fusdc","fusdt","grain",
-             "term finance","term labs","term vault","tmveth"]
+             "term finance","term labs","term vault","tmveth",
+             "mayachain","maya protocol","cacao","observedtxvoter"]
 
 def any_syn(group, text):
     # group = list of synonym substrings; HIT iff any synonym appears in text.

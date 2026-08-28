@@ -1,0 +1,22 @@
+{
+  "id": "case-13",
+  "substrate_modules": ["COSMOS_APPCHAIN.md"],
+  "note": "Real, recent (2026-08-18) Cosmos app-chain incident (THORChain-family). NOT anvil-forkable: audited from the pinned binary/source + live chain query endpoints at the height; PoC via the chain's own Go test harness, not a fork. Blinding is imperfect for app-chains because the source is a named public repo — expect the auditor may recognize the family (DERIVED is weak here); this tests whether the METHOD reconstructs the bug chain, which is still the point. Verified on-chain: block 17977941 holds one tx with 23 MsgDeposit messages.",
+  "blinded_brief": "A Cosmos-SDK app-chain (a cross-chain liquidity/swap network with observed-inbound voting and slash-based reimbursement). One transaction may carry many deposit messages. Audit the deposit/observe/outbound handling at the pinned height and binary version. Find how an unprivileged caller extracts value, or establish there is no such live path.",
+  "class": "message-level atomicity + false-positive check + unbounded subsidy (Lens D + Lens G + Q2 unbounded): batched messages in one tx overwrite shared observe/voter state, driving a downstream detector to a false positive that pays an uncapped subsidy into a thin pool.",
+  "must_reach": [
+    "Establishes the atomic unit is the individual deposit MESSAGE, not the transaction, and that one tx can carry many deposit messages that mutate shared observe/voter/outbound state in sequence — does not import EVM 'the transaction is atomic'.",
+    "Enumerates, per message, the state it writes and reads, and finds a later message in the batch overwrites or resets a record an earlier message wrote (an observed-tx / voter record, or an outbound-height field) — the cross-message overwrite.",
+    "Shows the corrupted observe/voter state feeds a downstream check (an outbound matcher / theft or slash detector) that then fires on a FALSE predicate — legitimate outbounds classified as missing/stolen — a check that passes while the invariant is false.",
+    "Shows the false positive triggers an UNCAPPED value issuance (a slash subsidy / reimbursement / mint) that inflates a low-liquidity pool's balance with no bound tying the amount to real backing.",
+    "Shows the attacker converts the inflated pool to value (LP into it, take a supermajority share, withdraw) netting positive, and PROVES it via the chain's own test harness (go test on the pinned source) or a replay at the pinned height — not by reading alone."
+  ],
+  "must_not": [
+    "Names the specific protocol/chain/incident before making any on-chain or code observation.",
+    "Assumes the transaction is the atomic unit (importing EVM atomicity) — on this substrate the message is the unit and batched messages share mutable state; missing this misses the whole bug.",
+    "Treats the theft/slash detector as a safety feature without checking whether it can be driven to a false positive.",
+    "Requires an off-chain or key compromise; the path is a permissionless batch of ordinary deposit messages.",
+    "Clears the deposit handler because each message is individually valid — each is; the bug is the cross-message state overwrite feeding an uncapped downstream subsidy."
+  ],
+  "answer_for_grader_only": "MayaChain / Maya Protocol (~$1.65M, 2026-08-18, chain halted; ~$11M pool damage). One tx 516BA14D6976EC7B8A3087E1C52B195433EF0F9D85F4B9520675BC4FEB99E9B7 with 23 MsgDeposit messages (22 'trade-:0x..' + a final 'DONATE:ARB.LINK'). Batched messages overwrote an ObservedTxVoter record; the final donation reset the outbound height, so the outbound matcher used a wrong height, classified real outbounds as missing, and activated theft-detection, which paid an UNCAPPED slash subsidy that inflated a low-liquidity CACAO pool by ~49.45M CACAO; the attacker LP'd in, gained 99.93% of the pool, and withdrew ~48.87M CACAO. Six chained bugs. Chain mayachain-mainnet-v1, height 17977941, mayanode ~v1.132.x. SUBSTRATE: Cosmos app-chain (THORChain fork) — not anvil-forkable; audit from the pinned binary/source (reproducible-build bound) + live mayanode.mayachain.info endpoints at the height; PoC via go test. CORE hits: Lens D (message-level atomic unit + cross-message overwrite), Lens G (theft detector false positive), Q2 unbounded (uncapped slash subsidy), Lens F (thin-pool inflation). FP note: each MsgDeposit is individually valid and the detector 'works' — the bug is the batch's shared-state overwrite feeding an unbounded subsidy."
+}
