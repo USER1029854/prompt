@@ -101,6 +101,11 @@ MATCH = {
              ["wrong path","different path","rebalance","keeper","hard work","hardwork","not on the","user path","deposit/withdraw path","guard-to-path"],
              ["round trip","round-trip","mint excess","more shares","restore","withdraw more","siphon","dilut","understate"],
              ["poc","fork","assertge","net positive","manipulat","per-share","conservation","invariant"]],
+ "case-12": [["governor","governance role","role manager","admin role","add strategy","addstrategy","set allocation","migrate","force-revoke","debt","reallocat","authority"],
+             ["float","total supply","voting","lp token","deposit-to-votes","acquire","cheap","thin","controlling share","majority","supermajority"],
+             ["timelock","delay","veto","reaction","watching","guardian","who can veto","nobody","not watched","seven","7-day"],
+             ["underpriced","costs less","below what it protects","cheap to capture","guard price","presumptive","acquisition cost","price of control"],
+             ["warp","fork","poc","contingent","queue","execute","unproven","reaction window","net"]],
 }
 
 # Genuine incident/protocol-victim names ONLY — and none of these may appear in CORE.md or any module,
@@ -110,7 +115,8 @@ RETRIEVAL = ["term finance","arrakis","g-uni","maya","mayachain","saga","mantra"
              "wormhole","gravity bridge","chia","cetus","foom","aftermath","moonwell","venus","aztec",
              "harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge",
              "cometdex","comet amm","blend","soroban","stellar",
-             "harvest finance","harvest","fusdc","fusdt","grain"]
+             "harvest finance","harvest","fusdc","fusdt","grain",
+             "term finance","term labs","term vault","tmveth"]
 
 def any_syn(group, text):
     # group = list of synonym substrings; HIT iff any synonym appears in text.

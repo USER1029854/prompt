@@ -65,7 +65,7 @@ STOP={"Bridge","Oracle","Governance","Protocol","Finance","Network","Vault","Tok
       # generic sentence-starters / plain English — flagging these trains you to ignore the warn channel
       "Found","Generalizes","Note","Notes","Where","Their","These","Which","While","Because",
       "Every","Under","After","Before","There","Since","Given","Router","Swap","Swaps",
-      "Highest","Deliberately","Connect","Conservation","Delay","Roles","Voting","Compare","Exploit","Target","Ethereum","October","Curve","Finance"}
+      "Highest","Deliberately","Connect","Conservation","Delay","Roles","Voting","Compare","Exploit","Target","Ethereum","October","Curve","Finance","Module","Vaults","Vault","Zodiac","Gnosis","Yearn","Governor","August","Tornado"}
 soft=[]
 for tok in sorted(set(re.findall(r"\b[A-Z][A-Za-z0-9]{4,}\b",ans))):
     if tok in STOP: continue
