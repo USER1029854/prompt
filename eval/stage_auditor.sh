@@ -32,11 +32,15 @@ PINNED-FORK-ONLY — non-negotiable:
 - ${RPC} is the only RPC you may query. Do NOT consult any other endpoint — not a public or live RPC,
   not mainnet, not an archive node, not a block explorer, not a default your tooling ships with. If your
   tools carry a built-in or default RPC, override it to ${RPC} for every single call.
-- The fork's head block is the pinned audit block. If any block number you read or compute comes back
-  higher than the fork head, you are reading the wrong chain — stop and re-point every query at ${RPC}.
-  A conclusion drawn from any block other than the fork head is an invalid run.
-- You may fork/replay locally from ${RPC} to build a proof. Never send a transaction to a public network.
-- (An explorer or live RPC would also de-blind you — one more reason the fork is your only window.)
+- The audit baseline is this fork's head at stage time — the pinned pre-incident block. Read all state
+  for your analysis at that baseline. If a query returns a block far AHEAD of that baseline, you have hit
+  a live endpoint by mistake — stop and re-point at ${RPC}; a conclusion read off live/current state is
+  an invalid run. (A live RPC or explorer would also de-blind you — another reason the fork is your only
+  window.)
+- You MAY advance THIS local fork to build a PoC — warp time, mine blocks, send forked transactions,
+  replay. That is expected for time-gated findings and is NOT "reading the wrong chain": advancing your
+  own local fork is proof-building; querying a different, live endpoint is the thing forbidden above.
+  Never send a transaction to a public network — the local fork only.
 
 BLIND RUN — non-negotiable:
 - Do NOT search the web. Do NOT try to identify which real protocol, project, incident, token, or chain
