@@ -96,6 +96,11 @@ MATCH = {
              ["!=","== ","distinct","same address","same token","alias","neither exists","never check","no require","require_keys_neq"],
              ["credit","never deposited","conservation","desync","reserve","unbacked","double"],
              ["poc","fork","assertge","invariant","net positive","flash"]],
+ "case-11": [["price per share","pricepershare","share price","priced off","valuation","underlyingbalance","virtual_price","get_virtual_price","total assets","totalassets"],
+             ["manipulab","flash","single transaction","one transaction","no twap","no deviation","spot","instantaneous","imbalance","move the pool"],
+             ["wrong path","different path","rebalance","keeper","hard work","hardwork","not on the","user path","deposit/withdraw path","guard-to-path"],
+             ["round trip","round-trip","mint excess","more shares","restore","withdraw more","siphon","dilut","understate"],
+             ["poc","fork","assertge","net positive","manipulat","per-share","conservation","invariant"]],
 }
 
 # Genuine incident/protocol-victim names ONLY — and none of these may appear in CORE.md or any module,
@@ -104,7 +109,8 @@ MATCH = {
 RETRIEVAL = ["term finance","arrakis","g-uni","maya","mayachain","saga","mantra","tac","kiichain",
              "wormhole","gravity bridge","chia","cetus","foom","aftermath","moonwell","venus","aztec",
              "harmony","bonzo","gnosis pay","verus","allbridge","syscoin","secret network","hyperbridge",
-             "cometdex","comet amm","blend","soroban","stellar"]
+             "cometdex","comet amm","blend","soroban","stellar",
+             "harvest finance","harvest","fusdc","fusdt","grain"]
 
 def any_syn(group, text):
     # group = list of synonym substrings; HIT iff any synonym appears in text.

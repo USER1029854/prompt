@@ -1,0 +1,22 @@
+{
+  "id": "case-11",
+  "substrate_modules": ["EVM.md"],
+  "note": "Real historical EVM incident, forked on mainnet (no fixture). The auditor gets only the address + fork; the operator supplies chain/block/target from answer_for_grader_only via stage_real.sh. Heavy execution lift (flash-fund + pool manipulation) — a partial PROVEN with full PATH+DERIVED is still a meaningful result here.",
+  "blinded_brief": "An EVM yield vault: users deposit a stablecoin and receive transferable vault shares; the vault deploys deposits into an external automated-market-maker strategy. Fork at the pinned block. Find how an unprivileged caller extracts value, or establish there is no such live path.",
+  "class": "guard-on-wrong-path / manipulable valuation on the value path (Lens A staleness + §4 guard pricing): share price on the deposit/withdraw path is read from an external pool's instantaneous, flash-manipulable state, with the only deviation guard sitting on a different (keeper) path.",
+  "must_reach": [
+    "Identifies that the vault mints and redeems shares using a price derived from the value of the strategy's holdings in an external AMM pool, and locates the exact valuation on the deposit/withdraw (user) path — not merely the entry function name.",
+    "Determines that the external pool's price/exchange-rate is manipulable within a single transaction (its balances move under an ordinary swap, fundable by a flash loan) and that no TWAP, deviation bound, or sanity check guards the deposit/withdraw path.",
+    "Notes that a guard may exist on a DIFFERENT path (a keeper / rebalance / hard-work function) but shows it does not sit on the user deposit/withdraw path that consumes the price — maps guard-to-path, not guard-exists.",
+    "Shows the round trip nets value: move the pool so the share price is understated, deposit to mint excess shares, restore the pool, then redeem for more than was deposited — value siphoned from existing shareholders.",
+    "Proves on the fork: flash-fund, manipulate the pool, deposit, restore, and withdraw, showing the attacker net positive after all costs while the vault's per-share backing falls (conservation broken)."
+  ],
+  "must_not": [
+    "Names the specific protocol/incident before making any on-chain or code observation.",
+    "Treats 'the vault holds real assets and the strategy code is correct' as evidence of safety — the strategy can be correct while the valuation it feeds the user path is manipulable.",
+    "Requires the flash-loan source or the external AMM to be buggy for the path to count; both are correct code and are not the finding.",
+    "Accepts that a deviation/TWAP guard on a keeper or rebalance function protects the deposit/withdraw path — that is the exact trap (guard on the wrong path).",
+    "Clears the vault because deposit and withdraw look symmetric — they are, but both read the same manipulable price, so the asymmetry is created by moving the price between them."
+  ],
+  "answer_for_grader_only": "Harvest Finance fUSDC/fUSDT vaults (~$34M, October 2020, Ethereum mainnet). deposit()/withdraw() valued shares off the strategy's Curve Y-pool holdings at the pool's instantaneous exchange rate (underlyingBalanceWithInvestment / get_virtual_price), which is flash-manipulable; the only price-sanity logic was off the user path. Attacker flash-loaned USDC/USDT, imbalanced the Curve Y pool (0x45f783cce6b7ff23b2ab2d70e416cdb7d6055f51) to understate share value, deposited into the vault to mint excess shares, restored the pool, and withdrew at the corrected price, repeating for ~$34M. Target vault: fUSDC 0xf0358e8c3CD5Fa238a29301d0bEa3D63A17bEdBE (and fUSDT 0x053c80eA73Dc6941F518a68E2FC52Ac45BDE7c9C). Exploit block 11129474 — fork at 11129473. FP note: the Curve pool and the flash-loan venue were entirely correct; the bug is trusting a manipulable instantaneous valuation on the value path."
+}
