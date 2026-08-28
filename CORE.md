@@ -703,6 +703,23 @@ prevent — it is these defects, not their weaponized PoCs, that the largest los
 on. This does not loosen the gate: a precondition you could not establish on live state stays an open
 question, and a path a cited guard truly closes stays killed.
 
+**No open question for anything the fork can decide.** Before you write any open question, test its
+settling action against the instrument in your hands: if you could run it on the fork or harness you
+already have — acquire the votes and submit the proposal, replay the batch, warp the delay and execute,
+call the function with the degenerate input — then it is not a question, it is the PoC you owe, and you
+build it before you write. The operator you hand the report to has no fork you lack; a settling action
+they could only perform by doing what you can do here is the audit undone, not a disclosure. An open
+question survives **only** for a blocker outside this environment: a private dependency that will not
+build, a source that will not bind, a historical query the node will not serve. A **priced-acquirable
+capture** is the trap that keeps landing here: a governance role, an admin, a voting float you showed
+cheap on live state is *proven acquirable the moment you priced it*, so it is already a finding — and its
+PoC is the **full acquire-then-exercise sequence** (acquire the weight → propose or queue the privileged
+action → warp past the delay, pricing it as a reaction window per §6 → execute), **never** a single
+direct call to an owner-only method, which reverts for everyone and proves nothing about the real path.
+Build that sequence on the fork. If it completes, the finding is proven (contingent on the veto per §6);
+if a cited guard stops it, it is killed; if only an external blocker stops you, it is `UNPROVEN` with
+that one link named. It does not fall back to an open question — that third door is closed.
+
 **A surface you named as able to drain the target cannot be deferred.** If your own reasoning
 identifies an in-scope component that could take the target's funds if flawed — **including an external
 protocol whose token/share/position the target holds as backing, reserve, or collateral, whose own
@@ -729,8 +746,14 @@ prices, pointers to artifacts, and everything you couldn't read or had to assume
 off-chain component the system's safety depends on, what decision it controls, and what breaks if it
 decided wrongly. **A clean on-chain result must never imply the whole system is sound.**
 
-Then write **`findings.md`** in the working directory: the verified findings, each with the dollar
-amount at risk, computed from live balances you re-read at head.
+Then write **`findings.md`** in the working directory: **every finding — PoC-proven and `UNPROVEN`
+alike — ranked by severity**, each tagged with its proof-state and the dollar amount at risk, computed
+from live balances you re-read at head. `UNPROVEN` is a proof-state, not an exclusion filter: an
+established defect over live funds belongs in `findings.md` at the severity of the funds it exposes even
+when you could not build the money-out replay. **Never write "no findings" or "none verified" here while
+such a defect stands** — that line is reserved for a true Null Report (§7), and "verified" is not a gate
+this file applies. A serious finding demoted out of the deliverable because its final link is unbuilt is
+the same miss as never finding it.
 
 **Checks — run when each artifact is written, not retrospectively** (retrospective checking reviews your
 own verdict and validates it; run these while there's no conclusion to defend):

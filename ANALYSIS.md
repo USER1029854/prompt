@@ -835,3 +835,60 @@ case-12c read the live post-shutdown head instead of the pinned pre-exploit fork
 must force **local-pinned-fork-only** reads: the only RPC is `127.0.0.1:8545`, its head *is* the audit
 block, and no live/public RPC may be consulted. Re-pin Term to a block before the Aug-23 shutdown and
 re-run on v6. Until that lands, case-12 stays inconclusive; the v6/v6.1 evidence rests on Maya.
+
+## v6.2 — a finding is a finding regardless of proof-state; no open question the fork can settle
+
+Evidence: two clean v6.1 re-runs on corrected setups (Maya case-13d on the pre-fix commit; Term case-12
+on the real ETH Meta Vault `0x26fcb50e` over a pinned fork routed through the curl relay). Both did the
+hard part right and both `findings.md` still said **"No verified findings."** That headline, on a run
+that found a real bug, is the failure.
+
+- **Maya case-13d** bound source to `ff018576a6ea` (not the patched 1.132.4 — the rig height/version pin
+  held), traced the 23-message shared-`txid` overwrite, and filed a fully-cited `UNPROVEN` finding with a
+  **keeper-level PoC** (SetObservedTxInVoter / SetSwapQueueItem / SetStreamingSwap all overwrite under the
+  pinned tree) and live-chain proof (trade-account deltas matching the message sums). Its one open
+  question was the honest external blocker: the private `tss-lib-private` dependency blocks the full
+  handler replay. Correct on every axis — **except it excluded its own finding from `findings.md`**
+  because it read "verified" as "net-positive money-out replay built."
+- **Term case-12** resolved the EIP-1167 proxy to impl `0xd8063123…`, read `totalAssets=2926 WETH`, and
+  **proved cheap governance capture**: wrapper float `0.535 WETH`, majority costs `~0.55 WETH` via the
+  vault's own `convertToAssets`, voting plugin `minProposerVotingPower=0`. Per §4/§8 that priced,
+  live-acquirable guard over a 2926 WETH vault *is already a finding*. Instead it filed the whole thing as
+  an **open question** whose settling action was *"execute or falsify a harmless proposal … on this
+  fork"* — fork-executable work — after trying only two *direct* owner-only calls (which correctly
+  reverted) and never building the real acquire→propose→warp→execute path.
+
+Diagnosis: v6.1 didn't bind because two escape hatches survived. (1) `findings.md` said "the verified
+findings" — one word that filters out every `UNPROVEN` finding, so the deliverable reads "none" while a
+serious defect stands. (2) The open-question door was still open at the decision point for fork-decidable
+work, and nothing forced the *shape* of a capture PoC, so the auditor stopped at direct privileged calls
+(which always revert) and punted.
+
+### Adopted
+
+- **§9 `findings.md` carries every finding — proven and `UNPROVEN` alike — ranked by severity, tagged
+  with proof-state.** `UNPROVEN` is a proof-state, not an exclusion filter; "verified" is not a gate this
+  file applies. It may never say "no findings"/"none verified" while an established defect over live funds
+  stands — that line is the Null Report's alone. Directly fixes both runs' misleading headline.
+- **§8 — no open question for anything the fork can decide.** Before filing an open question, test its
+  settling action against the instrument in hand: if you could run it on the fork/harness you have
+  (acquire votes + propose, replay the batch, warp + execute, degenerate input), it is the PoC you owe,
+  not a question. Open questions survive only for blockers *outside* this environment (private dep won't
+  build, source won't bind, node won't serve the height) — which keeps Maya's `tss-lib` open question
+  legitimate. Names the **priced-acquirable capture** trap explicitly: it is proven acquirable the moment
+  it is priced, so it is already a finding, and its PoC is the *full acquire-then-exercise sequence*
+  (acquire weight → propose/queue → warp the delay as a §6 reaction window → execute), never a single
+  direct owner-only call. Completes → proven (contingent on veto); cited guard stops it → killed; only an
+  external blocker stops you → `UNPROVEN`. The third door (open question) is closed for fork-decidable
+  paths.
+
+### Deliberately NOT done
+
+- **No verdict-wording change.** Term's verdict already read "incomplete" honestly; the defect was
+  classification + the `findings.md` filter, both fixed above. Once the capture is reclassified as a
+  finding, the verdict carries it. Extra verdict text would be padding.
+- **No forcing the impossible.** The fork-decidable rule only compels work the environment can actually
+  do. Maya's full economic replay needs a private dependency, so it stays `UNPROVEN` with that link named
+  — now surfaced in `findings.md` rather than hidden. The rule converts *punts*, not genuine blockers.
+- **No new prior.** Nothing here says "expect a bug." These are reporting-honesty and
+  classification-binding changes against two observed real runs, not a base-rate steer.
