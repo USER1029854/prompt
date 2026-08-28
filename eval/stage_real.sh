@@ -11,6 +11,7 @@
 #
 # Needs foundry (anvil/cast). Leaves anvil running in the background; stop it with the printed kill line.
 set -euo pipefail
+[ $# -lt 5 ] && { echo "usage: stage_real.sh <case.json> <workdir> <ARCHIVE_RPC> <EXPLOIT_BLOCK> <TARGET_ADDR>"; echo "(got $# args — a mangled multi-line paste? run it as ONE line)"; exit 2; }
 CASE="${1:?case json}"; WORK="${2:?workdir}"; RPC="${3:?archive rpc url}"; BLOCK="${4:?exploit block number}"; ADDR="${5:?target address}"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 command -v anvil >/dev/null || { echo "ERROR: foundry not found (anvil/cast). https://getfoundry.sh"; exit 1; }

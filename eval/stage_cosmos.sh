@@ -6,6 +6,7 @@
 #   ./stage_cosmos.sh cases/case-13-batched-message-overwrite.json runs/case-13 \
 #       mayachain-mainnet-v1 17977941 "mayanode v1.132.x" https://mayanode.mayachain.info
 set -euo pipefail
+[ $# -lt 6 ] && { echo "usage: stage_cosmos.sh <case.json> <workdir> <CHAIN_ID> <HEIGHT> <BINARY_VERSION> <LIVE_ENDPOINT>"; echo "(got $# args — a mangled multi-line paste? run it as ONE line)"; exit 2; }
 CASE="${1:?case}"; WORK="${2:?workdir}"; CHAIN="${3:?chain id}"; H="${4:?height}"; BIN="${5:?binary version}"; EP="${6:?live endpoint}"
 DIR="$(cd "$(dirname "$0")" && pwd)"
 "$DIR/run_case.sh" "$CASE" "$WORK" >/tmp/_rc.out 2>&1 || { cat /tmp/_rc.out; exit 1; }
