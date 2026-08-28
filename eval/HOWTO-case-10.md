@@ -19,34 +19,34 @@ Throughout, keep the two actors apart:
 A minimal defective AMM carrying exactly the case-10 shape lives in `fixtures/MiniAmm.sol`. You fork
 nothing external; anvil is the chain.
 
-### A1. Start a local chain and deploy the target
+### A1. Start a local chain, deploy, and seed
 Needs Foundry (`anvil`, `forge`, `cast`). Install: https://getfoundry.sh
+```bash
+anvil                                    # terminal 1 — leave running (chain id 31337)
 ```
-anvil                                  # terminal 1 — leave running (chain id 31337, funded keys printed)
-```
-In terminal 2, from the repo root, set a deployer key (anvil's first printed account) and deploy:
-```
-export ETH_RPC_URL=http://127.0.0.1:8545
-export PK=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80   # anvil acct#0
-cd eval/fixtures
+In terminal 2, from the repo root:
+```bash
+export RPC=http://127.0.0.1:8545
+export PK=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80      # anvil acct#0 = victim
+export ATT_PK=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d  # anvil acct#1 = attacker
 
-# two pool tokens + the amm
-forge create MiniAmm.sol:MockToken --rpc-url $ETH_RPC_URL --private-key $PK --constructor-args "USDC" --broadcast
-# -> note the "Deployed to:" address as TOKEN
-forge create MiniAmm.sol:MiniAmm   --rpc-url $ETH_RPC_URL --private-key $PK --broadcast
-# -> note the address as AMM
-```
-Seed the pool so there is a victim balance to take. Fund a "victim" deposit and a small attacker
-deposit (any second funded anvil key is the attacker):
-```
+# deploy one pool token + the amm
+forge create --rpc-url $RPC --private-key $PK eval/fixtures/MiniAmm.sol:MockToken --constructor-args "T" --broadcast
+forge create --rpc-url $RPC --private-key $PK eval/fixtures/MiniAmm.sol:MiniAmm --broadcast
 export TOKEN=<MockToken address>   AMM=<MiniAmm address>
-# mint to the amm's depositors via approve+deposit; simplest is to mint straight to the pool book:
-cast send $TOKEN "mint(address,uint256)" $AMM 1100000000000000000000 --rpc-url $ETH_RPC_URL --private-key $PK
-# give the attacker an on-book credit of 100 and matching reserves, mirroring a real 100-token deposit:
-#   (in the fixture you deposit through the AMM; for a quick harness you can also just prove it in a forge test — see A4)
+
+VICTIM=$(cast wallet address --private-key $PK)
+ATTACKER=$(cast wallet address --private-key $ATT_PK)
+
+# victim deposits 1000 (the money to be taken); attacker deposits 100 (their honest stake)
+cast send $TOKEN "mint(address,uint256)" $VICTIM   1000ether --rpc-url $RPC --private-key $PK
+cast send $TOKEN "mint(address,uint256)" $ATTACKER  100ether --rpc-url $RPC --private-key $PK
+cast send $TOKEN "approve(address,uint256)" $AMM $(cast max-uint) --rpc-url $RPC --private-key $PK
+cast send $TOKEN "approve(address,uint256)" $AMM $(cast max-uint) --rpc-url $RPC --private-key $ATT_PK
+cast send $AMM "deposit(address,uint256)" $TOKEN 1000ether --rpc-url $RPC --private-key $PK
+cast send $AMM "deposit(address,uint256)" $TOKEN  100ether --rpc-url $RPC --private-key $ATT_PK
+# pool now really holds 1100 T; attacker's honest claim is 100. The open door is swap(T,T,...).
 ```
-> The clean way to seed and drive this is a forge test (A4); the cast route above is only if you want to
-> poke it by hand. Either is fine — the auditor will build its own harness regardless.
 
 ### A2. Blind the bundle
 ```
