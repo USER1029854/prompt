@@ -484,9 +484,13 @@ Run this once over the whole system:
   confirm each fix is present in **this** running artifact. A published, unapplied advisory in a shared
   dependency is among the highest-probability findings in any system.
 - **Fork drift.** A fork inherits its parent's bugs and rarely its parent's fixes — and sometimes
-  *removes* a check the parent had. Diff against the **original upstream**, not just the fork's own repo;
-  a deleted guard is the finding.
-*Count: deployments of this system; shared dependencies; per one, fix-presence verified in the artifact.*
+  *removes* a check the parent had. Diff against the **original upstream**, not just the fork's own repo,
+  and read the diff **both ways**: a deleted guard is the finding, and what the fork or the patch *added*
+  is code no upstream review ever covered — so a version *above* an advisory's affected range relocates
+  the question, it does not close it. Enumerate the added value-touching entry points as exits and put
+  the three questions to them.
+*Count: deployments of this system; shared dependencies; per one, fix-presence verified in the artifact,
+and entry points added or changed versus upstream, each dispositioned.*
 
 ### Three techniques the lenses don't otherwise force (not a separate taxonomy — apply while running them)
 These are not new questions; they're three moves the lenses above assume but don't make you perform:
