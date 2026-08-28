@@ -41,8 +41,7 @@ Check every precompile that moves value: does it journal/snapshot consistently w
 own revert semantics, so that an EVM revert unwinds the native write and a native error unwinds the
 EVM frame? Vesting-account, staking, and balance-handling precompiles have all been hit. This is a
 **shared-framework** bug: pin the exact `cosmos/evm` (or ethermint/evmos lineage) version, pull its
-advisory list, and confirm each fix is present in the running binary — a published precompile advisory
-unapplied here is among the highest-probability findings.
+advisory list, and confirm each fix is present in the running binary.
 
 Two named forms this took, both worth checking explicitly:
 - **Mirrored-balance desync / underflow.** The EVM keeps a *mirror* of the native bank balance; a

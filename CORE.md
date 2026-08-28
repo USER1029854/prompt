@@ -301,7 +301,7 @@ team fixes the wrong artifact.
 ## 5. The seven lenses — run each over the exits, seams, and numbers, with a denominator and a kill quota
 
 The lenses are the detection toolkit for the three questions of §1: **A, E** serve Q1 (authorization &
-identity); **A, B, C, F** serve Q2 (amount & backing); **B, G** serve Q3 (does the check hold); **D**
+identity); **A, B, C, E, F** serve Q2 (amount & backing); **B, E, G** serve Q3 (does the check hold); **D**
 (atomicity) and the fleet pass are the always-on forces underneath and above. Run the lenses a seam or
 exit's row marks applicable. Two rules make this real work rather than a checklist, and they are the
 floor on effort that replaces "there's definitely a bug here":
@@ -388,14 +388,21 @@ each think they hold it? Reviewers import atomicity from whatever environment ta
 straight past the one place it doesn't hold; that is how a bounded flaw becomes unbounded.
 *Count: failure sites; per site, what survives a failure and what the atomic unit is.*
 
-### Lens E — Identity and naming (collide or forge the mapping)
+### Lens E — Identity and naming (collide, forge, or alias)
 For every place two identifiers are asserted to mean the same thing — asset denoms, wrapped-token
 mappings, account/PDA derivations, message hashes, chain ids, replay keys, the "same asset on the other
 chain" — can an attacker forge, collide, or poison the mapping? Is a permissionless registration
 trusted to establish identity? Does an encoding of concatenated variable-length fields admit two inputs
 hashing the same? Is the cross-chain counterpart *verified*, or inferred from a string the attacker
 chose?
-*Count: identity mappings; per mapping, how identity is established and whether an outsider writes it.*
+**The mirror — distinctness.** Above, two identifiers are forced to mean one thing; here one thing is
+handed to two parameters written to assume they differ. For every operation taking two or more
+references of the same kind — source and destination, the asset in and the asset out, two pools, two
+positions, the members of an aggregate — pass the *same* one for both: one leg is read while the other
+is written, or one leg's debit is handed straight back by the other's credit. Per pair, cite the line
+that enforces distinctness or record its absence.
+*Count: identity mappings, and same-kind reference pairs assumed distinct; per mapping, how identity is
+established and whether an outsider writes it; per pair, the distinctness check or its absence.*
 
 ### Lens F — Boundlessness, composition, and the unread surface
 - **Number-go-up at the edges.** For every value-bearing quantity, find every path that increases it and
@@ -427,14 +434,12 @@ chose?
   "what is each reserve/collateral/backing actually a claim on," not by following calls.
 - **Attention inversion.** Rank the surface by how much scrutiny it has already had and spend inversely.
   The least-read, highest-yield surfaces: the other substrate's side of a bridge; the shared
-  framework/dependency rather than the app on top — and its **published, unapplied advisories** (pin
-  every dependency's exact version, pull its advisory list, confirm each fix is present in the running
-  artifact — a known bug the deployment never took is among the highest-probability findings); the
-  older versioned branch beside a newer one (`_v92` next to `_v96` — fixes land in one and drift from
-  the other); **old, forgotten code that still holds mint authority or live approvals** (attackers
-  systematically re-audit a protocol's back catalogue); migration/upgrade/init/emergency paths; keeper
-  / cron / `EndBlock` / scheduled code with no external caller and therefore no external reviewer;
-  anything behind a role dismissed as "privileged" without pricing the role.
+  framework/dependency rather than the app on top — its *code*, not its advisory list (that check is
+  the fleet pass below); the older versioned branch beside a newer one (`_v92` next to `_v96` — fixes
+  land in one and drift from the other); **old, forgotten code that still holds mint authority or live
+  approvals** (attackers systematically re-audit a protocol's back catalogue); migration/upgrade/init/
+  emergency paths; keeper / cron / `EndBlock` / scheduled code with no external caller and therefore no
+  external reviewer; anything behind a role dismissed as "privileged" without pricing the role.
 *Count: dependency edges (and how many cross boundaries); degenerate live states; unread surfaces.*
 
 ### Lens G — The check that passes but doesn't hold (Q3)
@@ -680,7 +685,10 @@ settling action — above the verdict, always; a real bug filed beneath a clean 
 formality, and that placement is how it survives. (2) **Findings** — each: code cited precisely, the
 invariant it breaks, the exact call sequence, the numeric trace from the fork showing the attacker net
 ahead after all costs, the priced guard(s) it defeats and why they don't stop it, the minimal fix, and
-what evidence would falsify it. (3) **Verdict** — with, if clean, the mandatory Null Report (§7). (4)
+what evidence would falsify it. (3) **Verdict** — carrying its denominators: exits enumerated, and how
+many of them have all three questions answered with a citation each. Where those two numbers differ the
+verdict is **incomplete** and names what it did not reach; only a whole denominator earns **clean**,
+which then carries the mandatory Null Report (§7). (4)
 **The rest** — gate failures (one line each), the dormant-path register, the guard register with
 prices, pointers to artifacts, and everything you couldn't read or had to assume, including every
 off-chain component the system's safety depends on, what decision it controls, and what breaks if it
@@ -703,6 +711,9 @@ own verdict and validates it; run these while there's no conclusion to defend):
 - Does every guard have a **price in dollars from live state**, and a who-can-change-it-how-fast? For
   each, the Lens G tuple {invariant meant · predicate checked · scope verified · scope acted-on} — do
   the last three match the first?
+- Anomaly register: every row resolved with a cited line, or promoted to register 9 with its
+  cost-if-wrong? A dismissal of the form "harmless unless X" names X as the test you still owe — it
+  is a hypothesis, not a disposition.
 - Every set claim — only holder, only callee, nothing whitelisted, N children: event-reconstruction on
   disk, or `UNVERIFIED`?
 - Every Inventory row: a source dir or decompilation on disk, file count == row count?
