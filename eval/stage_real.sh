@@ -29,8 +29,28 @@ if cast block-number --rpc-url "$LOCAL" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "forking $RPC at block $FORK_AT (exploit block $BLOCK minus 1) ..."
-nohup anvil --fork-url "$RPC" --fork-block-number "$FORK_AT" >"$WORK/anvil.log" 2>&1 &
+# In a proxied sandbox (agent proxy + istio egress) anvil's fork transport does NOT
+# honor HTTPS_PROXY, so its direct egress is blocked (HTTP 403 from istio-envoy,
+# "failed to fetch network chain ID") even though the host is allowed. curl DOES use
+# the proxy + trusted CA, so route the fork through a loopback curl relay (rpc_forward.py).
+FORK_SRC="$RPC"; RELAY_PORT=8546
+if [ -n "${HTTPS_PROXY:-${https_proxy:-}}" ]; then
+  if curl -s --noproxy 127.0.0.1 "http://127.0.0.1:$RELAY_PORT" >/dev/null 2>&1; then
+    echo "NOTE: 127.0.0.1:$RELAY_PORT is busy (an old relay?). Stop it, then re-run:"
+    echo "        kill \$(lsof -ti:$RELAY_PORT)"; exit 1
+  fi
+  echo "proxied sandbox detected — anvil can't proxy itself, so routing the fork"
+  echo "through a curl relay: 127.0.0.1:$RELAY_PORT -> upstream RPC"
+  nohup python3 "$DIR/rpc_forward.py" "$RELAY_PORT" "$RPC" >"$WORK/relay.log" 2>&1 &
+  echo $! > "$WORK/relay.pid"
+  for i in $(seq 1 20); do curl -s --noproxy 127.0.0.1 "http://127.0.0.1:$RELAY_PORT" >/dev/null 2>&1 && break; sleep 0.3; done
+  curl -s --noproxy 127.0.0.1 "http://127.0.0.1:$RELAY_PORT" >/dev/null 2>&1 || { echo "ERROR: relay did not start. See $WORK/relay.log:"; tail -5 "$WORK/relay.log"; exit 1; }
+  FORK_SRC="http://127.0.0.1:$RELAY_PORT"
+  echo "  relay up (pid $(cat "$WORK/relay.pid"))"
+fi
+
+echo "forking at block $FORK_AT (exploit block $BLOCK minus 1) ..."
+nohup anvil --fork-url "$FORK_SRC" --fork-block-number "$FORK_AT" >"$WORK/anvil.log" 2>&1 &
 echo $! > "$WORK/anvil.pid"
 
 # wait for the fork to come up
@@ -49,4 +69,8 @@ echo "  target $ADDR has ${#CODE} hex chars of bytecode — good"
 
 "$DIR/stage_auditor.sh" "$CASE" "$WORK" "$ADDR" "$LOCAL"
 echo
-echo "when done auditing, stop the fork:  kill \$(cat $WORK/anvil.pid)"
+if [ -f "$WORK/relay.pid" ]; then
+  echo "when done auditing, stop the fork + relay:  kill \$(cat $WORK/anvil.pid) \$(cat $WORK/relay.pid)"
+else
+  echo "when done auditing, stop the fork:  kill \$(cat $WORK/anvil.pid)"
+fi
