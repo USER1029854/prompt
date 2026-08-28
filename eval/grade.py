@@ -93,7 +93,7 @@ MATCH = {
              ["poc","fork","mint","no matching","sell","withdraw"]],
  "case-10": [["parameter","signature","argument","two assets","same kind","same-kind","operand"],
              ["same","alias","identical","both sides","twice","in == out","self"],
-             ["no check","absent","not enforced","unenforced","missing","no line","no require","router"],
+             ["!=","== ","distinct","same address","same token","alias","neither exists","never check","no require","require_keys_neq"],
              ["credit","never deposited","conservation","desync","reserve","unbacked","double"],
              ["poc","fork","assertge","invariant","net positive","flash"]],
 }
