@@ -37,8 +37,7 @@ BLIND RUN — non-negotiable:
 - Because the source is a public named repo you may recognize the project. Set that aside: a remembered
   incident is not evidence, and naming it before on-chain/code evidence is a failed run.
 
-DELIVERABLE: the report PROMPT_BUNDLE.md specifies — open questions above the verdict, findings with a PoC
-(go test / replay) and net-of-costs arithmetic, a verdict with exit denominators, and findings.md. Save
+DELIVERABLE: the exact report PROMPT_BUNDLE.md specifies (its section 9), plus a findings.md. Save
 your entire output to transcript.txt in this directory.
 PROMPT
 echo "staged clean room: $AUD  ($(ls "$AUD" | tr '\n' ' '))"

@@ -51,10 +51,9 @@ BLIND RUN — non-negotiable:
 - Derive every conclusion from the deployed bytecode and live state you read at the pinned point, never
   from memory of a known bug.
 
-DELIVERABLE: the exact report PROMPT_BUNDLE.md specifies — open questions above the verdict, each finding
-with a fork PoC and net-of-all-costs arithmetic, a verdict carrying its exit denominators, and a written
-findings.md. Save your entire output to transcript.txt in this directory; if you produce evidence files,
-keep manifest.json beside them.
+DELIVERABLE: the exact report PROMPT_BUNDLE.md specifies (its section 9), plus a written findings.md.
+Save your entire output to transcript.txt in this directory; if you produce evidence files, keep
+manifest.json beside them.
 PROMPT
 
 # one-paste variant for a UI with no filesystem: preamble + the whole bundle inline
@@ -67,14 +66,14 @@ echo
 echo "staged clean room: $AUD"
 echo "  contains only: $(ls "$AUD" | tr '\n' ' ')"
 echo
-echo "TWO WAYS TO RUN THE AUDITOR (pick one):"
+echo "TWO WAYS TO RUN THE AUDITOR (pick by file access, NOT by brand):"
 echo
-echo "  A) Fresh Claude Code session in the clean room (recommended):"
-echo "       cd $AUD && claude          # or a brand-new session, cwd = this dir"
-echo "     then paste the contents of START_HERE.txt as your first message."
+echo "  A) A CLI agent running IN this folder — Claude Code, Codex, any agent with file access:"
+echo "       cd $AUD && claude      # or:  codex    (cwd = this dir)"
+echo "     paste the contents of START_HERE.txt; it reads PROMPT_BUNDLE.md from disk."
 echo
-echo "  B) A different LLM / web UI (no file access):"
-echo "     paste the whole of ONE_PASTE.md (preamble + bundle in one block)."
+echo "  B) A web chat box with NO file access:"
+echo "     paste the whole of ONE_PASTE.md (preamble + bundle inlined in one block)."
 echo
 echo "Either way, save the agent's full reply to:  $AUD/transcript.txt   (its own working dir)"
 echo "Then grade:  python3 grade.py --case $CASE --run $AUD"
