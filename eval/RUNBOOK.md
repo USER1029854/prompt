@@ -42,7 +42,10 @@ The harness cannot do this for you: it needs a real fork/replay pinned **one uni
 ```
 ./run_case.sh cases/case-02-governance-capture.json runs/case-02
 ```
-This writes `runs/case-02/BRIEF.json` and `runs/case-02/PROMPT_BUNDLE.md`, then leak-checks the bundle.
+The second argument is an **output** directory you name; the script creates it (`mkdir -p`) — there is
+nothing to fetch or clone, and `runs/` is gitignored because a transcript can carry a live address and an
+unfixed path. This writes `runs/case-02/BRIEF.json` and `runs/case-02/PROMPT_BUNDLE.md`, then leak-checks
+the bundle.
 **The `LEAK CHECK` line must read PASS** (or WARN with only obviously-generic words — read them). If it
 says FAILED, the bundle names the incident; fix the case's `blinded_brief` (or the CORE/module text) and
 re-run. Never hand a FAILED bundle to the auditor.

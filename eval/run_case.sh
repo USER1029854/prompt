@@ -16,9 +16,18 @@ import json,sys,os,re
 case_path,work,root=sys.argv[1],sys.argv[2],sys.argv[3]
 case=json.load(open(case_path))
 
-ANSWER_FIELDS=("must_reach","must_not","answer_for_grader_only","correct_output",
-               "fail_if","note_for_grader","expected_verdict")
-brief={k:v for k,v in case.items() if k not in ANSWER_FIELDS}
+# WHITELIST, not blacklist. A blinding harness must fail closed: anything not explicitly
+# cleared for the auditor stays out. (A blacklist silently shipped `class` and `note` — the
+# bug class in plain words — to the auditor while the leak check, which screens only incident
+# names and grader fields, reported PASS.)
+BRIEF_FIELDS=("id","substrate_modules","blinded_brief")
+OPERATOR_FIELDS=("class","note","must_reach","must_not","answer_for_grader_only",
+                 "correct_output","fail_if","note_for_grader","expected_verdict")
+brief={k:case[k] for k in BRIEF_FIELDS if k in case}
+unknown=[k for k in case if k not in BRIEF_FIELDS and k not in OPERATOR_FIELDS]
+if unknown:
+    print("!! case has unrecognised field(s), withheld from the auditor:",", ".join(unknown))
+    print("   add each to BRIEF_FIELDS (auditor may see) or OPERATOR_FIELDS (must not) in run_case.sh")
 open(os.path.join(work,"BRIEF.json"),"w").write(json.dumps(brief,indent=2))
 
 # assemble the bundle the auditor is allowed to see
@@ -46,7 +55,8 @@ low=bundle.lower()
 hard=[]
 for n in RETRIEVAL:
     if re.search(r"\b"+re.escape(n)+r"\b",low): hard.append(("incident-name",n))
-for marker in ("answer_for_grader_only","must_reach","must_not","expected_verdict"):
+for marker in ("answer_for_grader_only","must_reach","must_not","expected_verdict",
+               "note_for_grader","correct_output","fail_if"):
     if marker in bundle: hard.append(("grader-field",marker))
 # soft: capitalised proper-nouns (len>=5) from the answer that show up in the bundle
 ans=case.get("answer_for_grader_only","")
