@@ -262,13 +262,12 @@ For every Guard row, compute from live state at the pinned point:
     of the voting/wrapped-voting token and the *live* quorum/threshold; a tiny float means cheap control
     however sound the voting math. **(b) Through the protocol's own path:** can voting power be *minted or
     wrapped* by depositing into the protocol — so a deposit buys shares that wrap into votes — at a cost
-    far below the market price of the float? This deposit-to-votes route is how thin-governance captures
-    actually happen; price it, not just the open market. And a fixed-looking admin does not end
-    this question: where control appears to be a multisig or an owner, check whether the protocol's own
-    share / LP / deposit token confers votes or veto over that admin's fund-moving actions — in a vault
-    the shares you mint by depositing are frequently the governance weight over the very role that moves
-    the deposited funds, so "control is a fixed multisig" is the acquire-price only if nothing cheaper
-    reaches or overrides it. **But cheap voting weight is only a finding when
+    far below the market price of the float? Price this deposit-to-votes route, not just the open market.
+    And a fixed-looking admin does not end this question: where control appears to be a multisig or an
+    owner, check whether the protocol's own share / LP / deposit token confers votes or veto over that
+    admin's fund-moving actions — the shares you mint by depositing can be the governance weight over the
+    very role that moves the deposited funds, so "control is a fixed multisig" is the acquire-price only
+    if nothing cheaper reaches or overrides it. **But cheap voting weight is only a finding when
     the timelock can't save users** — connect this to the timelock row below: if a malicious proposal
     faces a real, non-bypassable delay long enough for users to exit or a guardian to veto, cheap votes
     alone are not yet the exploit. The finding is cheap acquisition *and* no effective exit window.
@@ -453,8 +452,8 @@ established and whether an outsider writes it; per pair, the distinctness check 
 - **Attention inversion.** Rank the surface by how much scrutiny it has already had and spend inversely.
   The least-read, highest-yield surfaces: the other substrate's side of a bridge; the shared
   framework/dependency rather than the app on top — its *code*, not its advisory list (that check is
-  the fleet pass below); the older versioned branch beside a newer one (`_v92` next to `_v96` — fixes
-  land in one and drift from the other); **old, forgotten code that still holds mint authority or live
+  the fleet pass below); the older versioned branch beside a newer one (fixes land in one and drift
+  from the other); **old, forgotten code that still holds mint authority or live
   approvals** (attackers systematically re-audit a protocol's back catalogue); migration/upgrade/init/
   emergency paths; keeper / cron / `EndBlock` / scheduled code with no external caller and therefore no
   external reviewer; anything behind a role dismissed as "privileged" without pricing the role.
@@ -513,7 +512,7 @@ and entry points added or changed versus upstream, each dispositioned.*
 ### Three techniques the lenses don't otherwise force (not a separate taxonomy — apply while running them)
 These are not new questions; they're three moves the lenses above assume but don't make you perform:
 - **Compare siblings.** Where the system implements the same operation twice — mint vs burn, deposit vs
-  withdraw, open vs close, `_v92` vs `_v96` — read them against *each other*, not against your
+  withdraw, open vs close, an old vs a newer version — read them against *each other*, not against your
   expectation. A fix or a guard that landed in one branch and not the other makes the codebase its own
   specification: the bug is the sibling missing the guard.
 - **Read the constants as secrets.** From your constant extraction, is any value a private key, a hash

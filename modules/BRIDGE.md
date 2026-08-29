@@ -61,7 +61,7 @@ Every bridge credits value on B because it believes something happened on A. Thr
   as native gas, or two asset commitments on one output index, mints value one side never debited.
 - **Receipt / marker binding (Q3).** A spent-receipt or nullifier marker must be derived from the
   *authenticated* source header (shard id, block number, source chain), not from replayable fields.
-  Unbound cross-shard receipts were replayed to mint at L1-consensus scale.
+  An unbound one is replayable — minting value against a receipt already consumed or never authorized.
 
 ### 3. Is the accounting conserved across the two sides? (Claim ↔ settlement, solvency)
 - **Mint ⇔ lock invariant.** Total wrapped/minted on all destinations must equal total locked in

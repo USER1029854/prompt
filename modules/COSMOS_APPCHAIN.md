@@ -84,8 +84,9 @@ Two named forms this took, both worth checking explicitly:
   reward, or redemption amount computed as `pool.ValueInX(amount)` **without capping by the pool's
   own live balance**. Read the live pool depth and the live reserve that is supposed to fund the
   payout; if the reserve is a fraction of a plausible draw, the guard is priced at ~0. Check for a
-  capped path (`_v96`) beside an uncapped one (`_v92`) — the `SetPool`-before-`Send` ordering means
-  the inflated state can persist even when the funding send fails.
+  capped path beside an uncapped one, and for the ordering where the inflated state is written and
+  committed **before** the funding transfer that can fail — so the inflated state persists even when
+  that transfer reverts.
 - **Observation / voting quorum (bridge & oracle modules).** How many validators/oracles must attest,
   and is the set enumerated from live state? A quorum guard is only as strong as the honest-majority
   assumption and the correctness of the tally — and the tally is often the bug (a voter record keyed
@@ -100,17 +101,17 @@ Two named forms this took, both worth checking explicitly:
   surface on these chains.
 - **The keeper-to-keeper call** across modules — module A's `EndBlock` calls module B's keeper with a
   value B trusts. Cross-module is where Lens A and Lens F live here.
-- **`_v92`-style versioned handlers** kept for historical replay/upgrade compatibility, still
+- **Version-suffixed handlers** kept for historical replay/upgrade compatibility, still
   reachable.
 - **Migration/upgrade handlers** (`x/upgrade`) that rewrite store layout — a store-key migration that
   misreads the old encoding is a lifecycle seam.
 - **IBC**: the packet-receipt / timeout / acknowledgement paths, and whether a `recvPacket` credits
   before verifying, or a timeout refunds a packet that was also relayed.
 - **The signing / consensus / bridge-vault layer.** For a chain that runs its own outbound signing,
-  threshold signatures (TSS/MPC), or cross-shard/receipt consensus, that layer is **in scope** — it is
-  where several 2026 L1 losses lived (a TSS fork years behind upstream that skipped the zero-knowledge
-  proofs validating key formation, letting a bonded-in node reconstruct the vault key over successive
-  signing rounds; cross-shard receipts not bound to the authenticated source header, replayed to mint).
+  threshold signatures (TSS/MPC), or cross-shard/receipt consensus, that layer is **in scope**: a
+  signing/threshold library a fork behind upstream can skip a soundness check (a proof validating key
+  formation, say), letting a bonded-in participant reconstruct the vault key over successive signing
+  rounds; and a cross-shard/receipt not bound to its authenticated source header can be replayed to mint.
   This is simultaneously an authorization-acquirable case (bond/stake to join the validator/signer set —
   price that, §4), a Q3 case (a skipped or mis-specified soundness check in the signing protocol), and a
   fleet case (the crypto library is a fork behind upstream). Read the TSS/keygen library at its pinned
