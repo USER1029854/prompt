@@ -906,3 +906,27 @@ real market liquidity).
   uncovered / dormant / incomplete together) — refuted 2/2 as padding: "dormant" is already closed
   verbatim at §8, and §8's two-fate resolution already makes the third door illegitimate; the one place
   that actually needed the operative rule was §4's acquire-price, which the targeted sentence fixes.
+
+## §A + register 9 — the environment is the auditor's, with full rights
+
+Evidence: two fresh general runs (Cronos, Canto) both killed the handed advisory and then accepted
+**self-fixable** environment failures as hard walls: "Go >=1.25.0 not satisfied → binary not replayed"
+(Cronos), and "modules 403 from proxy.golang.org → no reproducible build," "public RPC stale → couldn't
+confirm" (Canto). None of those are blockers — the auditor runs with full rights over its environment and
+can update Go, set GOPROXY / a mirror, stand up its own node, or pick another endpoint. It just didn't.
+
+The register-9 wording licensed it: "a dependency that won't build" was listed as a *legitimate* open
+question, so "won't build because the toolchain is old" read as a blocker. Operator's point, exact: an
+open question is only for something *neither* the operator nor the auditor can lift; anything the operator
+could fix by reconfiguring (newer Go, a working endpoint), the auditor can fix itself.
+
+### Adopted
+- **§A setup:** "treat this environment as yours, with full rights" — install what's absent, update a
+  toolchain too old, set the module proxy/mirror a fetch refuses, stand up your own node or pick another
+  endpoint. A tooling/build/fetch failure you can clear is a chore, not a limitation. The fork-can't-be-
+  built caveat is now conditioned on *after exercising those rights* and reserved for a genuine external
+  blocker (private dependency nobody has, a service that refuses the given credential).
+- **Register 9:** reserved for a genuine external blocker you cannot lift with those rights; a toolchain
+  too old, a missing package, a 403 fetch, a stale/failing public endpoint are explicitly "yours to fix,"
+  never open questions. General (any substrate, any tool), no prior added — it removes a false-blocker
+  license the two runs exposed.

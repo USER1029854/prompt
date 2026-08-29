@@ -165,11 +165,15 @@ list.
    degenerate live state, a rounding direction that favors the caller. Each is chased to resolution or
    promoted to an open question with its cost-if-wrong. **Anomalies write your best theories.** An
    anomaly is not yet a finding and must not be filtered as one — chase it before you judge it.
-9. **Open questions** — *only* what you cannot resolve with the access you already have here: a
-   dependency that won't build, a source that won't bind to the deployment, a height the node won't
-   serve. If the settling action is something you could do here — decompile it, reconstruct the set,
-   stand up the fork and run it — then it is not a question, it is unfinished work; do it before you
-   report. The operator has no access you lack, so a question you could have answered yourself is the
+9. **Open questions** — *only* a genuine external blocker you cannot lift with the full rights you hold
+   over this environment (§A): a service that refuses the credential you were given, a source that is
+   private and nowhere obtainable, a height no reachable node will serve. A toolchain too old, a missing
+   package, a module fetch that 403s, a stale or failing public endpoint are **not** blockers — they are
+   yours to fix (update it, install it, set the proxy, run your own node, pick another endpoint), and so
+   is any settling action you could perform here — decompile it, reconstruct the set, stand up the fork
+   and run it: not a question but unfinished work, done before you report. The operator's environment is
+   yours and carries no access you lack, so anything the operator could settle by reconfiguring you
+   settle yourself; a question you could have answered — or an obstacle you could have cleared — is the
    audit undone, not a disclosure. A figure that won't reconcile is an anomaly (8); a path you couldn't
    build over a live defect is an `UNPROVEN` finding (§8) — neither is an open question.
 
@@ -821,10 +825,16 @@ addresses — report that; don't find something plausible and audit that instead
 
 Before beginning, inspect the execution environment for available blockchain tooling, RPC endpoints,
 and API credentials (providers, explorer/source-verification APIs, chain-specific endpoints). Use the
-tools you find fit for; install what's absent — then **land one unprivileged call against a fork at the
-pinned point before code reading begins.** Everything in §6 assumes an instrument you can put questions
-to, and a question you can ask in one call is cheaper than the paragraph you would write guessing its
-answer. If the fork cannot be built here, that bounds every conclusion you will reach and belongs in the
+tools you find fit for, and **treat this environment as yours, with full rights**: install what's
+absent, update a toolchain that is too old, set the module proxy / registry / mirror a fetch is
+refusing, stand up your own node or pick another endpoint when the public one is stale or failing. A
+tooling, build, or fetch failure you can clear with those rights is a chore, not a limitation — clear it
+and continue; it is never a blocker or an open question. Then **land one unprivileged call against a fork
+at the pinned point before code reading begins.** Everything in §6 assumes an instrument you can put
+questions to, and a question you can ask in one call is cheaper than the paragraph you would write
+guessing its answer. If, after exercising those rights, the fork genuinely cannot be built here — a
+private dependency nobody has, a service that refuses the credential you were given — that bounds every
+conclusion you will reach and belongs in the
 report; discovering it at write-up means the audit was reading all along.
 
 ---
