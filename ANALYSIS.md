@@ -930,3 +930,14 @@ could fix by reconfiguring (newer Go, a working endpoint), the auditor can fix i
   too old, a missing package, a 403 fetch, a stale/failing public endpoint are explicitly "yours to fix,"
   never open questions. General (any substrate, any tool), no prior added — it removes a false-blocker
   license the two runs exposed.
+
+## §8 — the "Cheap" gate weighs cost against the reward
+
+Operator note: the Cheap reachability condition shouldn't be so harsh it excludes a small-outlay,
+high-reward attack — e.g. a governance capture funded with ~2 ETH that takes millions. Clarified (not
+loosened): cost is measured *against the reward*; an outlay small against the take is cheap, and so is
+capital the exploit itself returns (a deposit you withdraw, voting weight you deposit for and then use to
+drain). What still fails is an outlay both **unrecoverable and large against what the exploit takes** —
+so a genuinely expensive, unrecoverable position is still excluded ("nothing too much"). Also sharpened
+"weight you can't sell" to "weight whose only value is itself," so instrumental weight used to drain
+isn't mistaken for a disqualifier. General, no incident named.

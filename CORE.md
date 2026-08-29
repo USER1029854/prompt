@@ -655,12 +655,16 @@ it looks privileged, dead, or irrelevant until understood.
   precondition** (via acquirable governance, a permissionless call, a degenerate state they can create
   or that already exists on-chain), it is **live, not dormant.** Do not use the dormant register to
   file away a precondition the attacker controls.
-- **Cheap — measured in capital at risk, not in time or atomicity.** Flash-loanable capital and gas is
-  cheap. Holding an *unrecoverable* position, fronting unborrowable money, or accumulating weight you
-  can't sell fails. **Time is free. Waiting is free. Precomputation is free. Pre-registering a message
-  and returning weeks later is free. Deploying a helper is free.** An exploit is not disqualified for
-  taking a month of patience or being non-atomic — only for requiring capital the attacker can't
-  recover.
+- **Cheap — measured in capital at risk *against the reward*, not in time or atomicity.** Flash-loanable
+  capital and gas is cheap; so is any outlay small against the take — a few ETH of gas and funding to
+  seize a role or vote that moves millions is not a barrier — and so is capital the exploit itself
+  returns: a deposit you withdraw, or voting weight you acquire by depositing and then use to drain. What
+  fails is an outlay both **unrecoverable and large against what the exploit takes**: an unrecoverable
+  position, unborrowable money, or weight whose only value is itself and that you cannot sell. **Time is
+  free. Waiting is free. Precomputation is free. Pre-registering a message and returning weeks later is
+  free. Deploying a helper is free.** An exploit is not disqualified for taking a month of patience or
+  being non-atomic — only for requiring capital the attacker can't recover *and* that the take doesn't
+  dwarf.
 
 Anything failing a condition gets one line and no severity — except a dormant path, analyzed in full in
 its register. **Out of scope:** front-running, sandwiching, generalized MEV against honest users;
