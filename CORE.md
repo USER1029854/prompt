@@ -502,9 +502,13 @@ Run this once over the whole system:
   weakest deployment governs. A patched-upstream-but-unpatched-here instance is a live finding with its
   postmortem already written.
 - **Shared dependency.** One framework, library, oracle-wrapper, or fork-template reused across many
-  protocols means a bug in it is a bug in all of them. Pin its exact version, pull its advisory list,
-  confirm each fix is present in **this** running artifact. A published, unapplied advisory in a shared
-  dependency is among the highest-probability findings in any system.
+  protocols means a bug in it is a bug in all of them. Pin its exact version and confirm each known fix
+  is present in **this** running artifact. But this is **cheap hygiene, run early and then set aside — not
+  the audit**: an *unpatched* advisory is a live finding, while a *clean* sweep means only the framework's
+  already-known bugs are absent and says nothing about this deployment's own code. Either way every live
+  exit still owes its three questions. "Is it past the fixed version?" is one early check against
+  *reference* claims (§3) — never the engagement, and never a substitute for auditing what an unprivileged
+  caller can take from the live artifact now.
 - **Fork drift.** A fork inherits its parent's bugs and rarely its parent's fixes — and sometimes
   *removes* a check the parent had. Diff against the **original upstream**, not just the fork's own repo,
   and read the diff **both ways**: a deleted guard is the finding, and what the fork or the patch *added*
