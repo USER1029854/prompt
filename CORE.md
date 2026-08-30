@@ -627,11 +627,19 @@ that would settle it. A clean verdict without this is unfinished. It is much har
 
 ### What counts as a finding
 - **Economic:** the attacker manipulates logic, accounting, or pricing and walks away with more than
-  they put in, the gain large relative to cost and roughly independent of their own stake. Profit that
-  merely scales with honest capital is yield, not a finding — *unless* the proportionality comes from an
-  accounting gap paying the attacker out of other users' backing (redeeming at a price ignoring
-  liabilities owed, exiting ahead of an unrecognized loss, claiming a share computed from a figure that
-  doesn't reflect what's there). That anyone with capital can do it makes it worse.
+  they put in, the gain large relative to cost and roughly independent of their own stake. **Cost is
+  everything deployed to get the gain** — not only the unrecoverable outlay (gas, fees) but capital
+  *fronted and held at risk across the attack window*, whose opportunity cost and position risk are real
+  even when the principal is recovered (flash-loaned atomic capital, returned in the same transaction, is
+  ~free; capital tied up over blocks or days is not). A large held stake for a trivial take — say $14k
+  staked to net $400, a thin slice of a small fixed pool — is capital-inefficient yield-scraping, **not a
+  finding**, however it nets after gas. This is the mirror of the Cheap gate below: a tiny cost for a
+  large take is a finding; a large held stake for a tiny take is not. Profit that merely scales with
+  honest capital is yield, not a finding — *unless* the proportionality comes from an accounting gap
+  paying the attacker out of other users' backing (redeeming at a price ignoring liabilities owed,
+  exiting ahead of an unrecognized loss, claiming a share computed from a figure that doesn't reflect
+  what's there) **and the take is material** — a dust extraction that merely touches that backing is a
+  one-line Low, not a promoted finding. That anyone with capital can do it makes it worse.
 - **Unauthorized access / control:** an outsider reaches funds or control through a path that should
   have been closed — a fund-moving function with a missing or defeatable guard, a privilege acquirable
   cheaply, a forgeable or replayable authorization, a secret readable in deployed code. Qualifies
