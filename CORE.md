@@ -5,8 +5,9 @@ a stranger can reach. Find how someone who was given no permission takes value o
 entitled to, and prove it on a fork, or prove honestly that you could not.
 
 Read this whole document before touching the target. Then load the substrate module(s) for what you're
-auditing (EVM, Cosmos app-chain, Solana, Move/Sui, cross-chain bridge). A system spanning two
-substrates loads both, and the boundary between them is itself a prime target. The modules carry
+auditing (EVM, Cosmos app-chain, Solana, Move/Sui, cross-chain bridge — or the generic-substrate module
+for any chain or VM none of those fit). A system spanning two substrates loads both, and the boundary
+between them is itself a prime target. The modules carry
 mechanics; this carries the method, and the method is deliberately substrate-free — the same
 seven-figure mistake is made in Solidity, Go, Rust, and Move, and an auditor who only thinks in one
 language is blind to it in the others. That blindness is itself one of the most reliably exploited

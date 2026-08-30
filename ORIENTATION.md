@@ -48,8 +48,10 @@ defect lived at a seam" argument are in `ANALYSIS.md §1`.)
   execution (fork/replay, warp, PoC) · §7 kill / recompose / argue-the-other-side / Null Report · §8 what
   counts + the **reachability gate** (Acquirable · Live · Cheap) + severity · §9 output + self-checks · §A
   intake (deriving the system from each input type).
-- **`modules/`** — `EVM.md`, `COSMOS_APPCHAIN.md`, `SOLANA.md`, `MOVE_SUI.md`, `BRIDGE.md`. Substrate
-  mechanics only; they are allowed to be substrate-specific but must teach shapes, not incidents.
+- **`modules/`** — `EVM.md`, `COSMOS_APPCHAIN.md`, `SOLANA.md`, `MOVE_SUI.md`, `BRIDGE.md`, and
+  `GENERIC_SUBSTRATE.md` (the meta-method for any chain/VM without a dedicated module — characterize the
+  substrate's properties first, then map CORE's recurring shapes onto them; names no specific chain).
+  Substrate mechanics only; they are allowed to be substrate-specific but must teach shapes, not incidents.
 - **`CORE.v1.md` / `v2.md` / `v3.md`** — archived earlier versions, kept for diffing. The live method is
   `CORE.md`.
 - **`DISCOVERY.md`** — an urgency-first triage companion that scans many protocols and emits a "handoff
