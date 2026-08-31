@@ -581,12 +581,28 @@ cannot reliably compute by hand (fuzz the core value math at its edges — `asse
 per-operation monotonicity properties catch what a hand trace misses); and it finds violations nobody
 theorized — the only technique that yields a bug you didn't think to look for.
 
-**Build the PoC and do the arithmetic.** Every finding gets an executable exploit against the fork: the
-call sequence, state before and after, and the attacker's **net position after all real costs** — gas
-across every transaction, flash-loan fees, swap fees, slippage at the sizes actually moved. This is
-your own rebuttal: a PoC that doesn't net positive told you it wasn't a finding before a triager did.
-Where you genuinely can't run it, say what you tried, including the fuzzing parameters that failed to
-reach it.
+**Do the arithmetic on every finding; run the fork PoC on the ones that warrant it.** The arithmetic is
+never optional: for every candidate compute the attacker's **net position after all real costs** — gas,
+flash-loan fees, swap fees, slippage at the sizes actually moved. A path that doesn't net positive isn't a
+finding, and this is what tells you so before a triager does; it is also the profit test §8's severity turns
+on. A full executable exploit against the fork is the strongest proof there is but the most expensive, and it
+is *not* the bar a finding must clear to be reported (§8: an established defect is a finding with or without
+the PoC). So **build and run the fork PoC when, and only when, the finding is** (a) CRITICAL or HIGH leaning
+to CRITICAL, (b) a direct loss of funds, (c) profitable to the attacker — if no one profits it was never
+critical/high, so recheck the severity, don't build the PoC — and (d) weaponizable with no large capital held
+at risk: flash-loan fees and gas only, atomic or trivially fundable on the fork. That set is both the most
+valuable to prove and the cheapest; prove it end to end.
+
+**The effort a skipped PoC frees goes to correctness and to breadth — never to a shorter report or less
+work.** For a finding you don't execute, spend it verifying the finding is *real*: re-derive the guard's
+price on live state, confirm every precondition holds on the fork now, re-walk each cited line for the
+reading that refutes you, and run §7's "argue the other side" against it in earnest — and keep fuzzing the
+value math at its edges regardless of severity, since that is investigation, not weaponization, and where
+miscomputations hide. Such a finding is `UNPROVEN` (§8) and loses no severity for it; it must be verified,
+not merely asserted. The instruction to fork and prove stays — it forces the deep work — but its power is
+*aimed*: not spent re-proving what's already established while paths go unexamined. **Do not let a skipped
+PoC become a missed finding.** Where you meant to run one and genuinely can't, say what you tried, including
+the fuzzing parameters that failed to reach it.
 
 **Never execute against live state.** Fork only. An unprivileged call that succeeds against mainnet is a
 call against someone's money. Where a disclosure program exists, follow its channel and embargo; where
@@ -598,7 +614,7 @@ none does, keep the report and PoC out of public and shared repositories until t
 
 **Kill every candidate before you keep it.** For each: find the guard elsewhere that defeats it (cite
 it), confirm the attacker reaches the required state unaided (cite it), do the arithmetic proving they
-end ahead (from the PoC). What doesn't survive its own rebuttal isn't a finding. But "I could not build
+end ahead (from the PoC, or the costed arithmetic where you ran none). What doesn't survive its own rebuttal isn't a finding. But "I could not build
 the beneficiary path" is not a rebuttal — only a cited line that closes the path is; an unclosed path
 you could not weaponize is `UNPROVEN` (§8), not killed. The one constraint:
 **you may not dismiss for unreachability without citing the specific code that makes it unreachable.**
